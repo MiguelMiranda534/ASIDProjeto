@@ -71,7 +71,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- DEPENDENCE QUE A STORA PEDIU DO SWAGGER -->
+		<!-- SWAGGER -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
