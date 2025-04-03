@@ -1,16 +1,14 @@
-package com.ijse.bookstore.repository;
+package repository;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.ijse.bookstore.entity.CartItem;
+import com.ijse.bookstore.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ijse.bookstore.entity.CartItem;
-import com.ijse.bookstore.entity.User;
+import java.util.List;
 
 
 @Repository

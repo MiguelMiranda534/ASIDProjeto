@@ -1,17 +1,15 @@
-package com.ijse.bookstore.service;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package service;
 
 import com.ijse.bookstore.entity.Cart;
 import com.ijse.bookstore.repository.CartRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
-public class CartServiceImpl implements CartService{
+public class CartServiceImpl implements CartService {
     
     @Autowired
     private CartRepository cartRepository;

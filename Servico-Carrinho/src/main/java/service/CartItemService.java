@@ -1,10 +1,9 @@
-package com.ijse.bookstore.service;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
+package service;
 
 import com.ijse.bookstore.entity.CartItem;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public interface CartItemService {

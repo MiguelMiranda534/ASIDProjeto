@@ -1,15 +1,12 @@
-package com.ijse.bookstore.service;
+package service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.ijse.bookstore.entity.CartItem;
+import com.ijse.bookstore.repository.CartItemRepository;
+import com.ijse.bookstore.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ijse.bookstore.entity.CartItem;
-import com.ijse.bookstore.entity.User;
-import com.ijse.bookstore.repository.CartItemRepository;
-import com.ijse.bookstore.repository.UserRepository;
+import java.util.List;
 
 @Service
 public class CartItemServiceImpl implements CartItemService{
