@@ -1,4 +1,4 @@
-package com.carrinhp.servicocarrinho;
+package com.carrinho.servicocarrinho;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,7 +1,7 @@
-package controller;
+package com.carrinho.servicocarrinho.controller;
 
-import com.ijse.bookstore.entity.Cart;
-import com.ijse.bookstore.service.CartService;
+import com.carrinho.servicocarrinho.entity.Cart;
+import com.carrinho.servicocarrinho.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +11,9 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api")
 public class CartController {
-    
+
     @Autowired
     private CartService cartService;
     // private UserRepository userRepository;
@@ -22,8 +23,8 @@ public class CartController {
 
         Cart updatedCart = cartService.createCart(createCart);
 
-      
-        
+
+
         return new ResponseEntity<>(updatedCart,HttpStatus.CREATED);
     }
 
