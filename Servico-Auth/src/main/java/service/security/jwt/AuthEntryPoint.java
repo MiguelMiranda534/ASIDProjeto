@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthEntryPoint implements AuthenticationEntryPoint{
     
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException{
-
+        System.out.println("⚠️ AuthEntryPoint foi chamado!");
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
     }
 }
