@@ -1,4 +1,4 @@
-package dto;
+package com.serviceauth.servicoauthentic.dto;
 
 import lombok.Data;
 

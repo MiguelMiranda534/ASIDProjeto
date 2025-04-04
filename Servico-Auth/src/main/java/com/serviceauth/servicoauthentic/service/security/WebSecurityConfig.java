@@ -1,4 +1,4 @@
-package service.security;
+package com.serviceauth.servicoauthentic.service.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import service.security.jwt.AuthEntryPoint;
-import service.security.jwt.AuthTokenFilter;
+import com.serviceauth.servicoauthentic.service.security.jwt.AuthEntryPoint;
+import com.serviceauth.servicoauthentic.service.security.jwt.AuthTokenFilter;
 
 @Configuration
 @EnableMethodSecurity

@@ -1,4 +1,4 @@
-package entity;
+package com.serviceauth.servicoauthentic.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

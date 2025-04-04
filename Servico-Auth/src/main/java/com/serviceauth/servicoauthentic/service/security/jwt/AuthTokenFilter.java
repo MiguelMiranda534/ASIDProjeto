@@ -1,4 +1,4 @@
-package service.security.jwt;
+package com.serviceauth.servicoauthentic.service.security.jwt;
 
 import java.io.IOException;
 
@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import service.security.UserServiceImpl;
+import com.serviceauth.servicoauthentic.service.security.UserServiceImpl;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

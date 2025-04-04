@@ -1,6 +1,5 @@
-package controller;
+package com.serviceauth.servicoauthentic.controller;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +20,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import dto.LoginDTO;
-import entity.User;
-import repository.UserRepository;
-import service.security.jwt.JwtUtils;
+import com.serviceauth.servicoauthentic.dto.LoginDTO;
+import com.serviceauth.servicoauthentic.entity.User;
+import com.serviceauth.servicoauthentic.repository.UserRepository;
+import com.serviceauth.servicoauthentic.service.security.jwt.JwtUtils;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController

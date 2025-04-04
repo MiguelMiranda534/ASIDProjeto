@@ -1,4 +1,4 @@
-package service.security.jwt;
+package com.serviceauth.servicoauthentic.service.security.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
