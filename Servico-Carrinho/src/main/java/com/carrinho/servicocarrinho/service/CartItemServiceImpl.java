@@ -1,8 +1,7 @@
-package service;
+package com.carrinho.servicocarrinho.service;
 
-import com.ijse.bookstore.entity.CartItem;
-import com.ijse.bookstore.repository.CartItemRepository;
-import com.ijse.bookstore.repository.UserRepository;
+import com.carrinho.servicocarrinho.entity.CartItem;
+import com.carrinho.servicocarrinho.repository.CartItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +13,6 @@ public class CartItemServiceImpl implements CartItemService{
     @Autowired
     private CartItemRepository cartItemRepository;
 
-    @Autowired
-    private UserRepository userRepository;
 
     @Override
     public CartItem createCartItem(CartItem cartItem){
@@ -89,9 +86,9 @@ public class CartItemServiceImpl implements CartItemService{
         cartItemRepository.resetAutoIncrement();
     }
 
-    public List<CartItem> getCartItemsByUsername(String username) {
+    public List<CartItem> getCartItemsByUsername(String userId) {
 
-        return cartItemRepository.findByUser_Username(username);
+        return cartItemRepository.findByUserId(userId);
         
     }
 }

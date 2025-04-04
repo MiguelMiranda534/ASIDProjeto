@@ -1,6 +1,6 @@
-package service;
+package com.carrinho.servicocarrinho.service;
 
-import com.ijse.bookstore.entity.Cart;
+import com.carrinho.servicocarrinho.entity.Cart;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

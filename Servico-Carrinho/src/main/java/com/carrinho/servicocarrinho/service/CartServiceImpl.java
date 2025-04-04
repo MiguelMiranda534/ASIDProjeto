@@ -1,7 +1,7 @@
-package service;
+package com.carrinho.servicocarrinho.service;
 
-import com.ijse.bookstore.entity.Cart;
-import com.ijse.bookstore.repository.CartRepository;
+import com.carrinho.servicocarrinho.entity.Cart;
+import com.carrinho.servicocarrinho.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +30,6 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart getCartIdByUserId(Long userId){
 
-        return cartRepository.getCartIdByUserId(userId);
+        return cartRepository.findByUserId(userId);
     }
 }

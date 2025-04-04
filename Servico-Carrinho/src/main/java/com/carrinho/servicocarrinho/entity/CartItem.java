@@ -1,4 +1,4 @@
-package entity;
+package com.carrinho.servicocarrinho.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 @Entity
 @Data
 public class CartItem {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -21,12 +21,7 @@ public class CartItem {
     @Column
     private Double subTotal;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private Book bookid;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id") 
-    private User user;
-    
+    // Store the username (or userId) of the user who owns the cart item
+    @Column(name = "username") // You could also store a userId if necessary
+    private String userId;
 }

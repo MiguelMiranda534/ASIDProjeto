@@ -1,7 +1,7 @@
-package controller;
+package com.carrinho.servicocarrinho.controller;
 
-import com.ijse.bookstore.entity.CartItem;
-import com.ijse.bookstore.service.CartItemService;
+import com.carrinho.servicocarrinho.entity.CartItem;
+import com.carrinho.servicocarrinho.service.CartItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +11,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
+@RequestMapping("/api")
 public class CartItemController {
     @Autowired
     private CartItemService cartItemService;
