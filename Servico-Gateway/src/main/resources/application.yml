@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: servico-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: servico-catalogo
+          uri: lb://servico-catalogo
+          predicates:
+            - Path=/books/**, /search, /updatequantity/**
+
+        - id: servico-auth
+          uri: lb://servico-auth
+          predicates:
+            - Path=/auth/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true

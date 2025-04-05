@@ -51,10 +51,21 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Dependência do Spring Cloud Gateway -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-gateway</artifactId>
 		</dependency>
+
+		<!-- Dependência do Eureka Client -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+			<!-- Outras dependências... -->
+
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
