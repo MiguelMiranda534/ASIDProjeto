@@ -1,16 +1,14 @@
-package com.ijse.bookstore.service;
+package com.shipping.servicoshipping.service;
 
-import com.ijse.bookstore.entity.Orders;
+import com.shipping.servicoshipping.entity.OrderDetails;
+import com.shipping.servicoshipping.repository.OrderDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.ijse.bookstore.entity.OrderDetails;
-import com.ijse.bookstore.repository.OrderDetailsRepository;
 
 import java.util.List;
 
 @Service
-public class OrderDetailsServiceImpl implements OrderDetailsService{
+public class OrderDetailsServiceImpl implements OrderDetailsService {
     
     @Autowired
     private OrderDetailsRepository orderDetailsRepository;
@@ -23,9 +21,7 @@ public class OrderDetailsServiceImpl implements OrderDetailsService{
     }
 
     @Override
-    public List<Orders> getAllOrders() {
-        return null;
+    public List<OrderDetails> getAllOrders() {
+        return orderDetailsRepository.findAll();
     }
-
-
 }
