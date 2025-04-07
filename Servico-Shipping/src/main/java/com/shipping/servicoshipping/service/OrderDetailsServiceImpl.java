@@ -19,5 +19,4 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
         return orderDetailsRepository.save(orderDetails);
 
     }
-
 }
