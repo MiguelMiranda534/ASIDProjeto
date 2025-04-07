@@ -8,9 +8,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="bookstore" />
+        <module name="Servico-Eureka" />
         <module name="bookstore (1)" />
+        <module name="gateway-service" />
         <module name="bookstore (2)" />
         <module name="bookstore (3)" />
+        <module name="bookstore (4)" />
+        <module name="bookstore (5)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -20,11 +24,15 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Servico-Carrinho" options="-parameters" />
+      <module name="Servico-Eureka" options="-parameters" />
       <module name="Servico-Shipping" options="-parameters" />
       <module name="bookstore" options="-parameters" />
       <module name="bookstore (1)" options="-parameters" />
       <module name="bookstore (2)" options="-parameters" />
       <module name="bookstore (3)" options="-parameters" />
+      <module name="bookstore (4)" options="-parameters" />
+      <module name="bookstore (5)" options="-parameters" />
+      <module name="gateway-service" options="-parameters" />
     </option>
   </component>
 </project>

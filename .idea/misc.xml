@@ -7,6 +7,10 @@
         <option value="$PROJECT_DIR$/bookstoreb/pom.xml" />
         <option value="$PROJECT_DIR$/Servico-Carrinho/pom.xml" />
         <option value="$PROJECT_DIR$/Servico-Shipping/pom.xml" />
+        <option value="$PROJECT_DIR$/Servico-Auth/pom.xml" />
+        <option value="$PROJECT_DIR$/Serviico-Catalogo/pom.xml" />
+        <option value="$PROJECT_DIR$/Servico-Eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/Servico-Gateway/pom.xml" />
       </list>
     </option>
   </component>
