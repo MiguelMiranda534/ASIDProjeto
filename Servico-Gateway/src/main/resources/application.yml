@@ -7,16 +7,31 @@ spring:
 
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       routes:
-        - id: servico-catalogo
-          uri: lb://servico-catalogo
-          predicates:
-            - Path=/books/**, /search, /updatequantity/**
-
         - id: servico-auth
           uri: lb://servico-auth
           predicates:
             - Path=/auth/**
+        - id: servico-catalogo
+          uri: lb://servico-catalogo
+          predicates:
+            - Path=/books/**
+            - Path=/categories/**
+            - Path=/subcategories/**
+            - Path=/search/**
+            - Path=/updatequantity/**
+        - id: servico-carrinho
+          uri: lb://servico-carrinho
+          predicates:
+            - Path=/cart/**
+        - id: servico-encomendas
+          uri: lb://servico-encomendas
+          predicates:
+            - Path=/orders/**
 
 eureka:
   client:

@@ -72,12 +72,14 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2023.0.1</version> <!-- ou 2023.0.0 -->
+				<version>2022.0.3</version> <!-- Versão compatível com Spring Boot 3.1.x -->
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+
 
 
 	<build>
