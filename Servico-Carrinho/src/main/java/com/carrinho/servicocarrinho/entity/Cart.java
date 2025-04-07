@@ -1,12 +1,10 @@
 package com.carrinho.servicocarrinho.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
 import java.time.LocalDate;
 
 @Entity
-@Data
 public class Cart {
 
     @Id
@@ -14,9 +12,35 @@ public class Cart {
     @Column(name = "cartid")
     private Long id;
 
-    @Column(name = "user_id") // Direct userId column
-    private Long userId; // User's ID
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column
     private LocalDate createdDate;
+
+    // Getters e Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public LocalDate getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
+    }
 }

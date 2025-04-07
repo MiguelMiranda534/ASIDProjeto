@@ -1,10 +1,8 @@
 package com.carrinho.servicocarrinho.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
 @Entity
-@Data
 public class CartItem {
 
     @Id
@@ -21,7 +19,48 @@ public class CartItem {
     @Column
     private Double subTotal;
 
-    // Store the username (or userId) of the user who owns the cart item
-    @Column(name = "username") // You could also store a userId if necessary
+    @Column(name = "username")
     private String userId;
+
+    // Getters e Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(Double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Double getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }
