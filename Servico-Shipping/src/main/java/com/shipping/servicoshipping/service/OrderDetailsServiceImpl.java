@@ -20,8 +20,4 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
 
     }
 
-    @Override
-    public List<OrderDetails> getAllOrders() {
-        return orderDetailsRepository.findAll();
-    }
 }

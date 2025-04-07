@@ -22,7 +22,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2021.0.8</version> <!-- Ou a versão correspondente ao teu Spring Boot -->
+				<version>2022.0.3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
