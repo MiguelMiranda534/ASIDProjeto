@@ -11,7 +11,7 @@
         <module name="Servico-Eureka" />
         <module name="bookstore (1)" />
         <module name="gateway-service" />
-        <module name="bookstore (2)" />
+        <module name="servico-auth" />
         <module name="bookstore (3)" />
         <module name="bookstore (4)" />
         <module name="bookstore (5)" />
@@ -28,11 +28,11 @@
       <module name="Servico-Shipping" options="-parameters" />
       <module name="bookstore" options="-parameters" />
       <module name="bookstore (1)" options="-parameters" />
-      <module name="bookstore (2)" options="-parameters" />
       <module name="bookstore (3)" options="-parameters" />
       <module name="bookstore (4)" options="-parameters" />
       <module name="bookstore (5)" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
+      <module name="servico-auth" options="-parameters" />
     </option>
   </component>
 </project>

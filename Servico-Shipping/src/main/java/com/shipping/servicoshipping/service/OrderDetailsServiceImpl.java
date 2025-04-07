@@ -19,9 +19,4 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
         return orderDetailsRepository.save(orderDetails);
 
     }
-
-    @Override
-    public List<OrderDetails> getAllOrders() {
-        return orderDetailsRepository.findAll();
-    }
 }
