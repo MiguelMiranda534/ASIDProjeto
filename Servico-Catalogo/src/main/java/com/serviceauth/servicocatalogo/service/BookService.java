@@ -1,10 +1,10 @@
-package com.serviceauth.serviicocatalogo.service;
+package com.serviceauth.servicocatalogo.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.serviceauth.serviicocatalogo.entity.Book;
+import com.serviceauth.servicocatalogo.entity.Book;
 
 @Service
 public interface BookService {

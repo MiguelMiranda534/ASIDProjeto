@@ -1,4 +1,4 @@
-package com.serviceauth.serviicocatalogo.service;
+package com.serviceauth.servicocatalogo.service;
 
 
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.serviceauth.serviicocatalogo.repository;
+package com.serviceauth.servicocatalogo.repository;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.serviceauth.serviicocatalogo.entity.Book;
+import com.serviceauth.servicocatalogo.entity.Book;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book,Long> {

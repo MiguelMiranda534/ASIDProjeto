@@ -1,11 +1,11 @@
-package com.serviceauth.serviicocatalogo.service;
+package com.serviceauth.servicocatalogo.service;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.serviceauth.serviicocatalogo.entity.Book;
-import com.serviceauth.serviicocatalogo.repository.BookRepository;
+import com.serviceauth.servicocatalogo.entity.Book;
+import com.serviceauth.servicocatalogo.repository.BookRepository;
 
 
 @Service

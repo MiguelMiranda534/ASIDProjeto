@@ -1,4 +1,4 @@
-package com.serviceauth.serviicocatalogo.entity;
+package com.serviceauth.servicocatalogo.entity;
 
 import jakarta.persistence.*;
 

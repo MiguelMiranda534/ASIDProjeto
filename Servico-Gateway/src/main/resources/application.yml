@@ -16,22 +16,26 @@ spring:
           uri: lb://servico-auth
           predicates:
             - Path=/auth/**
+
         - id: servico-catalogo
           uri: lb://servico-catalogo
           predicates:
-            - Path=/books/**
-            - Path=/categories/**
-            - Path=/subcategories/**
-            - Path=/search/**
-            - Path=/updatequantity/**
+            - Path=/catalogo/**
+
         - id: servico-carrinho
           uri: lb://servico-carrinho
           predicates:
             - Path=/cart/**
+
         - id: servico-encomendas
           uri: lb://servico-encomendas
           predicates:
             - Path=/orders/**
+
+        - id: gateway-composition
+          uri: http://dummy-host
+          predicates:
+            - Path=/gateway/addBookToCart
 
 eureka:
   client:
@@ -39,3 +43,10 @@ eureka:
       defaultZone: http://localhost:8761/eureka
     fetch-registry: true
     register-with-eureka: true
+
+  instance:
+    prefer-ip-address: true
+    ip-address: ${HOST_IP:127.0.0.1}
+
+app:
+  jwtSecret: B374A26A71490437AA024E4FADD5B497FDFF1A8EA6FF12F6FB65AF2720B59CCF

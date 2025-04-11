@@ -1,12 +1,12 @@
-package com.serviceauth.serviicocatalogo;
+package com.serviceauth.servicocatalogo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ServiicoCatalogoApplication {
+public class ServicoCatalogoApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ServiicoCatalogoApplication.class, args);
+		SpringApplication.run(ServicoCatalogoApplication.class, args);
 	}
 
 }

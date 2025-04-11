@@ -1,4 +1,4 @@
-package com.serviceauth.serviicocatalogo.controller;
+package com.serviceauth.servicocatalogo.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 

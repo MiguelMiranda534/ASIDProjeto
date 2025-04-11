@@ -11,15 +11,17 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/cart/cartitem")
 public class CartItemController {
     @Autowired
     private CartItemService cartItemService;
 
 
 
-    @PostMapping("/cartitem")
+    @PostMapping("/add")
     public ResponseEntity<CartItem> createCartItem(@RequestBody CartItem cartItem){
+
+        cartItem.setSubTotal(cartItem.getUnitPrice() * cartItem.getQuantity());
 
         CartItem createdCartItem = cartItemService.createCartItem(cartItem);
 
@@ -28,7 +30,7 @@ public class CartItemController {
          
     }
 
-    @GetMapping("/cartitem")
+    @GetMapping("")
     public ResponseEntity<List<CartItem>> getAllCartItem(){
 
         List<CartItem> cartItems = cartItemService.getAllCartitem();
@@ -36,7 +38,7 @@ public class CartItemController {
         return new ResponseEntity<>(cartItems,HttpStatus.OK);
     }
 
-    @GetMapping("/cartitem/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CartItem> getCartItemById(@PathVariable Long id){
 
         CartItem existCartItem  = cartItemService.getCartItemById(id);
@@ -48,7 +50,7 @@ public class CartItemController {
         }
     }
 
-    @GetMapping("/cartitem/user/{username}")
+    @GetMapping("/user/{username}")
     public ResponseEntity<List<CartItem>> getCartItemByUsername(@PathVariable String username) {
         List<CartItem> cartItems = cartItemService.getCartItemsByUsername(username);
         return new ResponseEntity<>(cartItems, HttpStatus.OK);
