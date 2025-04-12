@@ -7,10 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Data;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Subcategory {
     @Id
@@ -28,4 +27,12 @@ public class Subcategory {
     // ISTO ESTAVA EM COMENTÁRIO
     //@OneToMany(mappedBy = "subcategory_id")
     //private Book book;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

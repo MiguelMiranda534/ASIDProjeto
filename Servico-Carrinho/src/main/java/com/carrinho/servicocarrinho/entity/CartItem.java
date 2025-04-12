@@ -22,6 +22,9 @@ public class CartItem {
     @Column(name = "username")
     private String userId;
 
+    @Column(name = "book_id")
+    private Long bookId;
+
     // Getters e Setters
 
     public Long getId() {
@@ -63,4 +66,8 @@ public class CartItem {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+    public Long getBookId() {return bookId;}
+
+    public void setBookId(Long bookId) {this.bookId = bookId;}
 }
