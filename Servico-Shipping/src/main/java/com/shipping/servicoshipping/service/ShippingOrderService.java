@@ -11,6 +11,7 @@ import java.util.List;
 public interface ShippingOrderService {
     
     ShippingOrder createShippingOrder(ShippingOrder shippingOrder);
+    ShippingOrder getById(Long id);
 
     List<ShippingOrder> getAllShippingOrders();
 }

@@ -1,5 +1,5 @@
 package com.serviceauth.servicocatalogo.entity;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -33,10 +33,12 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
 
     @ManyToOne
     @JoinColumn(name = "subcategory_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Subcategory subcategory;
 
     // Getters e Setters

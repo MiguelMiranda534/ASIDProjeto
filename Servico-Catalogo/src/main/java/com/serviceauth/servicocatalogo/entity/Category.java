@@ -5,10 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Data;
+import lombok.Data;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category {
     
     public static final String HttpStatus = null;       // pode ser acedida pelas outras classes, mas não serve para nada

@@ -8,5 +8,7 @@ import java.util.List;
 @Service
 public interface OrderDetailsService {
     OrderDetails createOrderDetails(OrderDetails orderDetails);
+    OrderDetails getById(Long id);
+    List<OrderDetails> getByShippingOrderId(Long shippingOrderId);
 
 }

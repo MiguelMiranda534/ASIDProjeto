@@ -1,3 +1,4 @@
+/*
 package com.projeto.gatewayservice.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -163,3 +164,4 @@ public class AddBookToCartFilter implements GlobalFilter, Ordered {
         return -1;
     }
 }
+*/

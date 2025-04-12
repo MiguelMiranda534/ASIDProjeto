@@ -21,6 +21,22 @@ public class Author {
     @Column(unique = true , nullable = false)
     private String authorName;
 
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
 
     // ISTO ESTAVA EM COMENTÁRIO
     //@OneToMany(mappedBy = "authorid")

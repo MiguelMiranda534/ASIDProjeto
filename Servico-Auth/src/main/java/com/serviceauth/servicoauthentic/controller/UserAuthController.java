@@ -93,7 +93,7 @@ public class UserAuthController {
     }
 
 
-    @GetMapping("/user")
+    @GetMapping("/auth/user")
     public ResponseEntity<List<User>> getAllUser(@RequestBody User user){
 
         List<User> existUser = userRepository.findAll();
@@ -104,7 +104,7 @@ public class UserAuthController {
     }
 
 
-    @GetMapping("/id/{username}")
+    @GetMapping("/auth/id/{username}")
     public ResponseEntity<Optional<User>> getUserIdByUsername(@PathVariable String username) {
         Optional<User> userId = userRepository.findByUsername(username);
 
@@ -112,6 +112,21 @@ public class UserAuthController {
             return ResponseEntity.ok(userId);
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/auth/users/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        Optional<User> user = userRepository.findById(id);
+
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", 404,
+                    "error", "Not Found",
+                    "message", "Utilizador com ID " + id + " não encontrado"
+            ));
         }
     }
 

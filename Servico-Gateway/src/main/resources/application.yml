@@ -27,15 +27,15 @@ spring:
           predicates:
             - Path=/cart/**
 
-        - id: servico-encomendas
-          uri: lb://servico-encomendas
+        - id: servico-shipping
+          uri: lb://servico-shipping
           predicates:
-            - Path=/orders/**
+            - Path=/order/**
 
-        - id: gateway-composition
-          uri: http://dummy-host
-          predicates:
-            - Path=/gateway/addBookToCart
+        #- id: gateway-composition
+        #  uri: http://dummy-host
+        #  predicates:
+        #    - Path=/gateway/addBookToCart
 
 eureka:
   client:

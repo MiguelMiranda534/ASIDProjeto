@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @RestController
+@RequestMapping("/order")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ShippingOrderController {
     
@@ -33,4 +34,12 @@ public class ShippingOrderController {
         return new ResponseEntity<>(shippedOrder,HttpStatus.OK);
         
     }
+
+    @GetMapping("/shipping/{id}")
+    public ResponseEntity<ShippingOrder> getShippingOrderById(@PathVariable Long id) {
+        ShippingOrder shipping = shippingOrderService.getById(id);
+        System.out.println("🚚 Shipping encontrado: " + shipping);
+        return new ResponseEntity<>(shipping, HttpStatus.OK);
+    }
+
 }

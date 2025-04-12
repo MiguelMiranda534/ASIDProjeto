@@ -20,10 +20,15 @@ public class ShippingOrderServiceImpl implements ShippingOrderService {
         return shippingOrderRepository.save(shippingOrder);
 
     }
+    @Override
+    public ShippingOrder getById(Long id) {
+        return shippingOrderRepository.findById(id).orElse(null);
+    }
 
     public List<ShippingOrder> getAllShippingOrders(){
 
         
         return shippingOrderRepository.findAll();
     }
+
 }

@@ -7,10 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Data;
+import lombok.Data;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Subcategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
