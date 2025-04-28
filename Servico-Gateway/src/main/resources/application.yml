@@ -32,6 +32,11 @@ spring:
           predicates:
             - Path=/order/**
 
+        - id: servico-query
+          uri: lb://servico-query
+          predicates:
+            - Path=/query/**
+
         #- id: gateway-composition
         #  uri: http://dummy-host
         #  predicates:

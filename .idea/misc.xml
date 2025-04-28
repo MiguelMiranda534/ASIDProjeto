@@ -12,7 +12,14 @@
         <option value="$PROJECT_DIR$/Servico-Eureka/pom.xml" />
         <option value="$PROJECT_DIR$/Servico-Gateway/pom.xml" />
         <option value="$PROJECT_DIR$/Servico-Catalogo/pom.xml" />
+        <option value="$PROJECT_DIR$/../Mestrado/ASID/Projeto/PROJETO_ASID/Servico-Query/pom.xml" />
+        <option value="$PROJECT_DIR$/Servico-Query/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/../Mestrado/ASID/Projeto/PROJETO_ASID/Servico-Query/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="corretto-17" project-jdk-type="JavaSDK">

@@ -1,36 +1,26 @@
-package com.shipping.servicoshipping.entity;
+package com.projeto.servicoquery.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-public class ShippingOrder {
+@Table(name = "query_shipping")
+public class QueryShipping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shippingorder_id")
     private Long id;
 
-    @Column
+    private Long orderId;
     private String firstName;
-
-    @Column
     private String lastName;
-
-    @Column
     private String address;
-
-    @Column
     private String city;
-
-    @Column
     private String email;
-
-    @Column
-    private String postal_code;
-
-    @Column(name = "user_Id")
-    private Long userId;
-
+    private String postalCode;
 
     // Getters e Setters
 
@@ -40,6 +30,14 @@ public class ShippingOrder {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public String getFirstName() {
@@ -82,34 +80,11 @@ public class ShippingOrder {
         this.email = email;
     }
 
-    public String getPostal_code() {
-        return postal_code;
+    public String getPostalCode() {
+        return postalCode;
     }
 
-    public void setPostal_code(String postal_code) {
-        this.postal_code = postal_code;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-
-    @Override
-    public String toString() {
-        return "ShippingOrder{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", address='" + address + '\'' +
-                ", city='" + city + '\'' +
-                ", email='" + email + '\'' +
-                ", postal_code='" + postal_code + '\'' +
-                ", userId='" + userId + '\'' +
-                '}';
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
     }
 }

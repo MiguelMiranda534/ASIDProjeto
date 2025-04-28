@@ -77,7 +77,7 @@ public class SeeAllOrderDetailsController {
 
                                 Map<Long, Map<String, Object>> bookMap = books.stream()
                                         .filter(b -> b != null && b.get("id") != null)
-                                        .collect(Collectors.toMap(b -> getLongFromMap(b, "id"), b -> b));
+                                        .collect(Collectors.toMap(b -> getLongFromMap(b, "id"), b -> b, (existing, replacement) -> existing));
 
                                 List<Map<String, Object>> items = orderDetailsList.stream()
                                         .map(detail -> {

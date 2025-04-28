@@ -1,28 +1,23 @@
-package com.shipping.servicoshipping.entity;
+package com.projeto.servicoquery.entity;
 
-import jakarta.persistence.*;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.Date;
 
 @Entity
-public class Orders {
+@Table(name = "query_orders")
+public class QueryOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "orderid")
     private Long id;
 
-    @Column
-    private Date orderDate;
-
-    @Column
-    private double totalPrice;
-
-    @Column(name = "shippingorder_id")
-    private Long shippingOrderID;
-
-    @Column
     private Long userId;
+    private Date orderDate;
+    private Double totalPrice;
 
     // Getters e Setters
 
@@ -50,19 +45,11 @@ public class Orders {
         this.orderDate = orderDate;
     }
 
-    public double getTotalPrice() {
+    public Double getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
-    }
-
-    public Long getShippingOrderID() {
-        return shippingOrderID;
-    }
-
-    public void setShippingOrderID(Long shippingOrderID) {
-        this.shippingOrderID = shippingOrderID;
     }
 }
