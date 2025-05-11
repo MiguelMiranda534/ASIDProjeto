@@ -187,6 +187,9 @@ CREATE DATABASE carrinhodb;
 USE carrinhodb;
 show tables from carrinhodb;
 
+select * from cart;
+select * from cart_item;
+
 #===========================SERVIÇO DE SHIPPING==============================
 DROP DATABASE IF EXISTS shippingdb;
 CREATE DATABASE shippingdb;

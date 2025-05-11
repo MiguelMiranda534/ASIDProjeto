@@ -23,36 +23,39 @@ public class ShippingOrderServiceImpl implements ShippingOrderService {
 
     @Override
     public ShippingOrder createShippingOrder(ShippingOrder shippingOrder) {
+        // 1) Guardar o ShippingOrder
+        ShippingOrder created = shippingOrderRepository.save(shippingOrder);
 
-        // 1. Primeiro guardar o ShippingOrder na base de dados
-        ShippingOrder createdShippingOrder = shippingOrderRepository.save(shippingOrder);
-
-        // 2. Criar automaticamente a Order associada
-        Long userId = createdShippingOrder.getUserId();  // <- Pegar o userId (tens de ter o campo na ShippingOrder!)
-        Long shippingOrderId = createdShippingOrder.getId();  // <- ID do ShippingOrder acabado de criar
-
+        // 2) Criar automaticamente a Order associada
+        Long userId          = created.getUserId();
+        Long shippingOrderId = created.getId();
         ordersService.createOrder(userId, shippingOrderId);
 
-        // Construir evento OrderCreated
-        String message = String.format("{\"eventType\":\"OrderCreated\",\"userId\":%d,\"orderDate\":%d,\"totalPrice\":%.2f}",
-                userId, System.currentTimeMillis(), 0.0);
+        // 3) Disparar evento OrderCreated
+        String orderCreated = String.format(
+                "{\"eventType\":\"OrderCreated\",\"userId\":%d,\"orderDate\":%d,\"totalPrice\":%.2f}",
+                userId, System.currentTimeMillis(), 0.0
+        );
+        kafkaProducerService.sendToSaga(orderCreated);
+        kafkaProducerService.sendToCqrs(orderCreated);
 
-        kafkaProducerService.sendMessage(message);
+        // 4) Disparar evento ShippingCreated
+        String shippingCreated = String.format(
+                "{\"eventType\":\"ShippingCreated\",\"orderId\":%d," +
+                        "\"firstName\":\"%s\",\"lastName\":\"%s\",\"address\":\"%s\"," +
+                        "\"city\":\"%s\",\"email\":\"%s\",\"postalCode\":\"%s\"}",
+                shippingOrderId,
+                created.getFirstName(),
+                created.getLastName(),
+                created.getAddress(),
+                created.getCity(),
+                created.getEmail(),
+                created.getPostal_code()
+        );
+        kafkaProducerService.sendToSaga(shippingCreated);
+        kafkaProducerService.sendToCqrs(shippingCreated);
 
-        // Construir Evento ShippingCreated
-        String shippingMessage = String.format("{\"eventType\":\"ShippingCreated\",\"orderId\":%d,\"firstName\":\"%s\",\"lastName\":\"%s\",\"address\":\"%s\",\"city\":\"%s\",\"email\":\"%s\",\"postalCode\":\"%s\"}",
-                createdShippingOrder.getId(),
-                createdShippingOrder.getFirstName(),
-                createdShippingOrder.getLastName(),
-                createdShippingOrder.getAddress(),
-                createdShippingOrder.getCity(),
-                createdShippingOrder.getEmail(),
-                createdShippingOrder.getPostal_code());
-
-        kafkaProducerService.sendMessage(shippingMessage);
-
-        // 3. Devolver o ShippingOrder criado (como já fazias antes)
-        return createdShippingOrder;
+        return created;
     }
 
     @Override

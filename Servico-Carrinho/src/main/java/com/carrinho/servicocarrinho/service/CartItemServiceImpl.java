@@ -1,10 +1,13 @@
 package com.carrinho.servicocarrinho.service;
 
+import com.carrinho.servicocarrinho.entity.Cart;
 import com.carrinho.servicocarrinho.entity.CartItem;
 import com.carrinho.servicocarrinho.repository.CartItemRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -13,16 +16,26 @@ public class CartItemServiceImpl implements CartItemService{
     @Autowired
     private CartItemRepository cartItemRepository;
 
+    @Autowired
+    private CartService cartService;              // <<< para criar cart se não existir
+
 
     @Override
-    public CartItem createCartItem(CartItem cartItem){
-
+    public CartItem createCartItem(CartItem cartItem) {
+        // 1) garantir que existe um Cart para este username
+        String username = cartItem.getUsername();
+        if (cartService.getCartByUsername(username) == null) {
+            Cart novo = new Cart();
+            novo.setUsername(username);
+            novo.setCreatedDate(LocalDate.now());
+            cartService.createCart(novo);
+        }
+        // 2) guardar o item
         return cartItemRepository.save(cartItem);
-
-
     }
 
-   public List<CartItem> getAllCartitem(){
+
+    public List<CartItem> getAllCartitem(){
 
         return cartItemRepository.findAll();
 
@@ -86,9 +99,15 @@ public class CartItemServiceImpl implements CartItemService{
         cartItemRepository.resetAutoIncrement();
     }
 
-    public List<CartItem> getCartItemsByUsername(String userId) {
+    public List<CartItem> getCartItemsByUsername(String username) {
 
-        return cartItemRepository.findByUserId(userId);
+        return cartItemRepository.findByUsername(username);
         
+    }
+
+    @Override
+    @Transactional
+    public void clearCartForUser(String username) {
+        cartItemRepository.deleteByUsername(username);
     }
 }

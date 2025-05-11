@@ -20,7 +20,7 @@ public class CartItem {
     private Double subTotal;
 
     @Column(name = "username")
-    private String userId;
+    private String username;
 
     @Column(name = "book_id")
     private Long bookId;
@@ -59,12 +59,12 @@ public class CartItem {
         this.subTotal = subTotal;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Long getBookId() {return bookId;}

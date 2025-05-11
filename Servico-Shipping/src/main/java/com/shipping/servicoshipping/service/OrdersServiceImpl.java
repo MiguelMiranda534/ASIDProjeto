@@ -38,6 +38,17 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    public boolean finalizeOrder(Long userId) {
+        // Exemplo mínimo: apenas marca como "finalizado" se existir
+        Orders order = ordersRepository.findByUserId(userId);
+        if (order == null) return false;
+        // Aqui, se quisesses, podias fazer algo como:
+        // order.setStatus("FINALIZED");
+        // ordersRepository.save(order);
+        return true;
+    }
+
+    @Override
     public Orders getOrderById(Long orderId) {
         return ordersRepository.findById(orderId).orElse(null);
     }

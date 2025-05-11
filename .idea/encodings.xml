@@ -7,7 +7,10 @@
     <file url="file://$PROJECT_DIR$/Servico-Eureka/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Servico-Gateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Servico-Query/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Servico-Saga/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Servico-Shipping/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/bookstoreb/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
 </project>

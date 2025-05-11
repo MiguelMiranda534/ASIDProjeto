@@ -7,13 +7,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducerService {
 
-    private static final String TOPIC = "order-events";
+    // tópico para o modelo de leitura (CQRS)
+    public static final String CQRS_TOPIC = "order-events";
+    // tópico para a orquestração Saga
+    public static final String SAGA_TOPIC = "checkout-events";
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    @Autowired private KafkaTemplate<String, String> kafkaTemplate;
 
-    public void sendMessage(String message) {
-        System.out.println("📤 A enviar mensagem para Kafka: " + message);
-        kafkaTemplate.send(TOPIC, message);
+    /** Publica no fluxo de leitura (Query) */
+    public void sendToCqrs(String msg) {
+        System.out.println("📤 [CQRS] " + msg);
+        kafkaTemplate.send(CQRS_TOPIC, msg);
+    }
+
+    /** Publica no fluxo de saga */
+    public void sendToSaga(String msg) {
+        System.out.println("📤 [SAGA] " + msg);
+        kafkaTemplate.send(SAGA_TOPIC, msg);
     }
 }

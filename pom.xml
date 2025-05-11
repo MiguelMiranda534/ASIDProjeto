@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Herdamos do Spring Boot parent para trazer o BOM do Spring Boot -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.4</version>
+        <relativePath/> <!-- evita procurar POM local -->
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>asid-projeto</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>POM Pai ASID-Projeto</name>
+
+    <properties>
+        <!-- Versão do Java para todos os módulos -->
+        <java.version>17</java.version>
+        <!-- Versão do Spring Cloud que vamos importar -->
+        <spring-cloud.version>2022.0.3</spring-cloud.version>
+    </properties>
+
+    <modules>
+        <module>Servico-Eureka</module>
+        <module>Servico-Gateway</module>
+        <module>Servico-Query</module>
+        <module>Servico-Saga</module>
+        <module>Servico-Auth</module>
+        <module>Servico-Carrinho</module>
+        <module>Servico-Catalogo</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import do BOM do Spring Cloud -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

@@ -35,10 +35,10 @@ public class CartController {
         return new ResponseEntity<>(existcart,HttpStatus.OK);
     }
 
-    @GetMapping("/cart/{userId}")
-    public ResponseEntity<Cart> getCartIdByUserId(@PathVariable Long userId){
+    @GetMapping("/cart/{username}")
+    public ResponseEntity<Cart> getCartIdByUsername(@PathVariable String username){
 
-        Cart cartId = cartService.getCartIdByUserId(userId);
+        Cart cartId = cartService.getCartByUsername(username);
 
         if (cartId != null) {
             return new ResponseEntity<>(cartId,HttpStatus.OK);

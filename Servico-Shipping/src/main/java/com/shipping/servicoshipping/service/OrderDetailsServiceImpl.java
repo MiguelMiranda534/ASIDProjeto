@@ -21,38 +21,45 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
+    // Servico-Shipping/src/main/java/com/shipping/servicoshipping/service/OrderDetailsServiceImpl.java
+
     @Override
     public OrderDetails createOrderDetails(OrderDetails orderDetails) {
         System.out.println("➡️ A criar OrderDetails para ShippingOrderID: " + orderDetails.getShippingOrderId());
 
-        // 1. Guardar o novo OrderDetails
+        // 1) Guardar o OrderDetails
         OrderDetails createdDetail = orderDetailsRepository.save(orderDetails);
 
-        // 2. Atualizar o totalPrice da Order
+        // 2) Atualizar total da Order
         Orders order = ordersService.getOrderByShippingOrderId(orderDetails.getShippingOrderId());
         if (order != null) {
             System.out.println("📝 Atualizando Order ID: " + order.getId() + " com subTotal: " + createdDetail.getSubTotal());
-
             ordersService.updateTotalPrice(order.getId(), createdDetail.getSubTotal());
 
-            // Buscar novamente a Order atualizada depois do save
+            // buscar novamente para obter o total atualizado
             Orders updatedOrder = ordersService.getOrderById(order.getId());
 
-            // Construir evento
-            String message = String.format(
+            // 3) Disparar evento OrderItemAdded
+            String itemAdded = String.format(
                     "{\"eventType\":\"OrderItemAdded\",\"orderId\":%d,\"bookId\":%d,\"quantity\":%d,\"subTotal\":%.2f}",
-                    order.getId(), createdDetail.getBookId(), createdDetail.getQuantity(), createdDetail.getSubTotal()
+                    order.getId(),
+                    createdDetail.getBookId(),
+                    createdDetail.getQuantity(),
+                    createdDetail.getSubTotal()
             );
-            kafkaProducerService.sendMessage(message);
+            kafkaProducerService.sendToSaga(itemAdded);
+            kafkaProducerService.sendToCqrs(itemAdded);
 
-            // NOVO: Evento de atualização do Total (com o novo total)
-            String totalUpdatedMessage = String.format(
+            // 4) Disparar evento OrderTotalUpdated
+            String totalUpdated = String.format(
                     "{\"eventType\":\"OrderTotalUpdated\",\"orderId\":%d,\"newTotalPrice\":%.2f}",
-                    updatedOrder.getId(), updatedOrder.getTotalPrice()
+                    updatedOrder.getId(),
+                    updatedOrder.getTotalPrice()
             );
-            kafkaProducerService.sendMessage(totalUpdatedMessage);
-        }
-        else {
+            kafkaProducerService.sendToSaga(totalUpdated);
+            kafkaProducerService.sendToCqrs(totalUpdated);
+
+        } else {
             System.out.println("⚠️ Nenhuma Order encontrada para ShippingOrderID: " + orderDetails.getShippingOrderId());
         }
 

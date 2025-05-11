@@ -76,7 +76,7 @@ public class AddBookToCartController {
 
                     Map<String, Object> addBookRequest = new HashMap<>();
                     addBookRequest.put("bookId", bookId);
-                    addBookRequest.put("userId", username);
+                    addBookRequest.put("username", username);
                     addBookRequest.put("quantity", quantity);
                     addBookRequest.put("unitPrice", unitPrice);
                     addBookRequest.put("subtotal", unitPrice * quantity);

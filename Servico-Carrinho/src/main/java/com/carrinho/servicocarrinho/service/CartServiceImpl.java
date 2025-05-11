@@ -28,8 +28,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public Cart getCartIdByUserId(Long userId){
+    public Cart getCartByUsername(String username){
 
-        return cartRepository.findByUserId(userId);
+        return cartRepository.findByUsername(username);
     }
 }

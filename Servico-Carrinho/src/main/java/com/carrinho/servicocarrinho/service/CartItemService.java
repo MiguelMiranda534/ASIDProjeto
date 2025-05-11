@@ -15,5 +15,9 @@ public interface CartItemService {
     CartItem deleteCartItyItemById(Long id);
     void clearCart();
     void resetAutoIncrement();
+
+    // novo: apagar só os itens desse user
+    void clearCartForUser(String userId);
+
     List<CartItem> getCartItemsByUsername(String username);
 }
