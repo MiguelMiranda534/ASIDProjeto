@@ -1,8 +1,6 @@
-// Servico-SAGA/src/main/java/com/projeto/servicosaga/controller/CheckoutController.java
 package com.example.servicosaga.controller;
 
 import com.example.servicosaga.saga.CheckoutOrchestrator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,12 +8,22 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/checkout")
 public class CheckoutController {
 
-    @Autowired
-    private CheckoutOrchestrator orchestrator;
+    private final CheckoutOrchestrator orchestrator;
 
+    public CheckoutController(CheckoutOrchestrator orchestrator) {
+        this.orchestrator = orchestrator;
+    }
+
+    /** Inicia a saga para o utilizador indicado. */
     @PostMapping("/{userId}")
-    public ResponseEntity<?> checkout(@PathVariable Long userId) {
-        orchestrator.startSaga(userId);
-        return ResponseEntity.accepted().body("Checkout iniciado para user " + userId);
+    public ResponseEntity<String> start(@PathVariable Long userId) {
+        try {
+            orchestrator.startSaga(userId);
+            return ResponseEntity.ok("Saga iniciada para o utilizador " + userId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body("Erro ao iniciar saga: " + ex.getMessage());
+        }
     }
 }

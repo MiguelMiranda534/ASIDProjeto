@@ -19,51 +19,61 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
     private OrdersService ordersService; // <<< IMPORTANTE
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private KafkaProducerService   kafkaProducerService;
 
-    // Servico-Shipping/src/main/java/com/shipping/servicoshipping/service/OrderDetailsServiceImpl.java
 
     @Override
     public OrderDetails createOrderDetails(OrderDetails orderDetails) {
-        System.out.println("➡️ A criar OrderDetails para ShippingOrderID: " + orderDetails.getShippingOrderId());
+        System.out.println("➡️  A criar OrderDetails para ShippingOrderID: "
+                + orderDetails.getShippingOrderId());
 
-        // 1) Guardar o OrderDetails
-        OrderDetails createdDetail = orderDetailsRepository.save(orderDetails);
+        /* 1) Guardar o detalhe */
+        OrderDetails created = orderDetailsRepository.save(orderDetails);
 
-        // 2) Atualizar total da Order
-        Orders order = ordersService.getOrderByShippingOrderId(orderDetails.getShippingOrderId());
+        /* 2) Buscar/actualizar a encomenda */
+        Orders order = ordersService.getOrderByShippingOrderId(
+                orderDetails.getShippingOrderId());
         if (order != null) {
-            System.out.println("📝 Atualizando Order ID: " + order.getId() + " com subTotal: " + createdDetail.getSubTotal());
-            ordersService.updateTotalPrice(order.getId(), createdDetail.getSubTotal());
 
-            // buscar novamente para obter o total atualizado
-            Orders updatedOrder = ordersService.getOrderById(order.getId());
-
-            // 3) Disparar evento OrderItemAdded
-            String itemAdded = String.format(
-                    "{\"eventType\":\"OrderItemAdded\",\"orderId\":%d,\"bookId\":%d,\"quantity\":%d,\"subTotal\":%.2f}",
+            /* 2a) pedir reserva de stock */
+            kafkaProducerService.sendToSaga(String.format(
+                    "{\"eventType\":\"StockReserveRequested\"," +
+                            "\"orderId\":%d,\"bookId\":%d,\"quantity\":%d}",
                     order.getId(),
-                    createdDetail.getBookId(),
-                    createdDetail.getQuantity(),
-                    createdDetail.getSubTotal()
+                    created.getBookId(),
+                    created.getQuantity()
+            ));
+
+            /* 2b) actualizar total */
+            ordersService.updateTotalPrice(order.getId(), created.getSubTotal());
+            Orders updated = ordersService.getOrderById(order.getId());
+
+            /* 2c) eventos já existentes (CQRS + Saga) */
+            String itemAdded = String.format(
+                    "{\"eventType\":\"OrderItemAdded\",\"orderId\":%d," +
+                            "\"bookId\":%d,\"quantity\":%d,\"subTotal\":%.2f}",
+                    order.getId(),
+                    created.getBookId(),
+                    created.getQuantity(),
+                    created.getSubTotal()
             );
             kafkaProducerService.sendToSaga(itemAdded);
             kafkaProducerService.sendToCqrs(itemAdded);
 
-            // 4) Disparar evento OrderTotalUpdated
             String totalUpdated = String.format(
-                    "{\"eventType\":\"OrderTotalUpdated\",\"orderId\":%d,\"newTotalPrice\":%.2f}",
-                    updatedOrder.getId(),
-                    updatedOrder.getTotalPrice()
+                    "{\"eventType\":\"OrderTotalUpdated\",\"orderId\":%d," +
+                            "\"newTotalPrice\":%.2f}",
+                    updated.getId(),
+                    updated.getTotalPrice()
             );
             kafkaProducerService.sendToSaga(totalUpdated);
             kafkaProducerService.sendToCqrs(totalUpdated);
 
         } else {
-            System.out.println("⚠️ Nenhuma Order encontrada para ShippingOrderID: " + orderDetails.getShippingOrderId());
+            System.out.println("⚠️  Nenhuma Order encontrada para ShippingOrderID: "
+                    + orderDetails.getShippingOrderId());
         }
-
-        return createdDetail;
+        return created;
     }
 
     @Override

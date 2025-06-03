@@ -32,4 +32,14 @@ public class CartServiceImpl implements CartService {
 
         return cartRepository.findByUsername(username);
     }
+
+    @Override
+    public boolean lockCart(String userId) {
+        Cart cart = cartRepository.findByUsername(userId);
+        if (cart == null) return false;
+        if (cart.isLocked()) return false; // já está bloqueado
+        cart.setLocked(true);
+        cartRepository.save(cart);
+        return true;
+    }
 }

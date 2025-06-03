@@ -178,7 +178,7 @@ INSERT INTO book (
   1
 );
 
-select * from book;
+
 
 
 #===========================SERVIÇO DE CARRINHO==============================

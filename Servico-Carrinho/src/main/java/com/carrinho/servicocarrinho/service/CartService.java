@@ -11,4 +11,5 @@ public interface CartService {
     Cart createCart(Cart cart);
     List<Cart> getAllCart();
     Cart getCartByUsername(String username);
+    boolean lockCart(String userId);
 }

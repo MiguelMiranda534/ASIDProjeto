@@ -10,5 +10,7 @@ public enum EventType {
     CartCleared,
     OrderFinalizeRequested,
     OrderFinalized,
-    OrderFinalizeFailed;
+    OrderFinalizeFailed,
+    StockReserveRequested,
+    StockReleaseRequested;
 }

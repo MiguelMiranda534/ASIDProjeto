@@ -6,10 +6,7 @@ package com.carrinho.servicocarrinho.saga;
  * Deve incluir todos os estados relevantes (p.ex. STOCK_RESERVED, etc).
  */
 public enum EventType {
-    OrderCreated,
-    OrderItemAdded,
-    ShippingCreated,
-    OrderTotalUpdated,
-    CartClearRequested,
-    CartCleared
+    CartLockRequested, CartLocked, CartLockFailed,
+    OrderCreated, OrderItemAdded, ShippingCreated, OrderTotalUpdated,
+    CartClearRequested, CartCleared
 }

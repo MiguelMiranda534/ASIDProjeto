@@ -18,6 +18,9 @@ public class Cart {
     @Column
     private LocalDate createdDate;
 
+    @Column(name = "locked")
+    private boolean locked = false;
+
     // Getters e Setters
 
     public Long getId() {
@@ -43,4 +46,8 @@ public class Cart {
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
     }
+
+    public boolean isLocked()            { return locked; }
+
+    public void setLocked(boolean l)     { this.locked = l; }
 }
