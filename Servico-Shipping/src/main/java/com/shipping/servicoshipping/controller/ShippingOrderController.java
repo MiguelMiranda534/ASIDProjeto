@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -19,11 +20,33 @@ public class ShippingOrderController {
     private ShippingOrderService shippingOrderService;
 
     @PostMapping("/shipping")
-    public ResponseEntity<ShippingOrder> createShippingOrder(@RequestBody ShippingOrder shippingOrder){
+    public ResponseEntity<ShippingOrder> createShippingOrder(@RequestBody Map<String,Object> body){
 
-        ShippingOrder shippedOrder = shippingOrderService.createShippingOrder(shippingOrder);
+        System.out.println("📥 [ShippingOrderController] recebido POST /order/shipping → body=" + body);
 
-        return new ResponseEntity<>(shippedOrder,HttpStatus.CREATED);
+        // em vez de receber diretamente um ShippingOrder, recebemos um JSON genérico
+        Long userId      = Long.valueOf(body.get("userId").toString());
+        String firstName = body.get("firstName").toString();
+        String lastName  = body.get("lastName").toString();
+        String address   = body.get("address").toString();
+        String city      = body.get("city").toString();
+        String email     = body.get("email").toString();
+        String postal    = body.get("postal_code").toString();
+        String sagaId    = body.get("sagaId").toString(); // ← capturar aqui
+
+        ShippingOrder shippingOrder = new ShippingOrder();
+        shippingOrder.setUserId(userId);
+        shippingOrder.setFirstName(firstName);
+        shippingOrder.setLastName(lastName);
+        shippingOrder.setAddress(address);
+        shippingOrder.setCity(city);
+        shippingOrder.setEmail(email);
+        shippingOrder.setPostal_code(postal);
+
+        ShippingOrder created = shippingOrderService.createShippingOrder(shippingOrder, sagaId);
+        System.out.println("✅ [ShippingOrderController] retornando ShippingOrder criado: " + created);
+
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @GetMapping("/shipping")

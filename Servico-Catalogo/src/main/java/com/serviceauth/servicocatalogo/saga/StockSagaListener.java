@@ -29,9 +29,11 @@ public class StockSagaListener {
 
     @KafkaListener(topics = TOPIC, groupId = "servico-catalogo-saga")
     public void onMessage(String message) {
+        System.out.println("📥 [StockSagaListener] recebeu raw: " + message);
         try {
             JsonNode evt     = objectMapper.readTree(message);
             String  typeText = evt.get("eventType").asText();
+            System.out.println("➡️ [StockSagaListener] eventoType=" + typeText + ", payload=" + evt.toString());
 
             // 1) Log de todos os eventos recebidos (para debug)
             System.out.println("📥 StockSagaListener recebeu: " + typeText + " → " + evt.toString());
@@ -49,6 +51,8 @@ public class StockSagaListener {
             Long      orderId = evt.has("orderId") ? evt.get("orderId").asLong() : null;
             Long      bookId  = evt.has("bookId") ? evt.get("bookId").asLong() : null;
             int       qty     = evt.has("quantity") ? evt.get("quantity").asInt() : 0;
+
+            System.out.println("🔍 [StockSagaListener] processar " + typeText + " → bookId=" + bookId + ", qty=" + qty + ", sagaId=" + sagaId);
 
             // 4) Log antes de chamar reserve/release
             System.out.println("➡️ Processando evento: " + typeText +
@@ -69,9 +73,10 @@ public class StockSagaListener {
     }
 
     private void reserve(Long orderId, Long bookId, int qty, String sagaId) {
-        System.out.println("🔍 Tentando reservar stock → bookId=" + bookId + ", quantidade=" + qty);
+        System.out.println("🔍 [StockSagaListener.reserve] bookId=" + bookId + ", qty=" + qty
+                + ", sagaId=" + sagaId);
         if (bookId == null) {
-            System.err.println("⚠️ Sem bookId válido no StockReserveRequested");
+            System.err.println("⚠️ [StockSagaListener] sem bookId no StockReserveRequested, a falhar reserva");
             publish(StockReserveFailed, orderId, null, qty, sagaId);
             return;
         }

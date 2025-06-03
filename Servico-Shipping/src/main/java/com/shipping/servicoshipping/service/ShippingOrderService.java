@@ -8,10 +8,9 @@ import java.util.List;
 
 
 @Service
+// interface
 public interface ShippingOrderService {
-    
-    ShippingOrder createShippingOrder(ShippingOrder shippingOrder);
+    ShippingOrder createShippingOrder(ShippingOrder shippingOrder, String sagaId);
     ShippingOrder getById(Long id);
-
     List<ShippingOrder> getAllShippingOrders();
 }

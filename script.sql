@@ -178,7 +178,9 @@ INSERT INTO book (
   1
 );
 
-
+UPDATE book
+SET quantity = 200
+WHERE title = 'Harry Potter e a Pedra Filosofal';
 
 
 #===========================SERVIÇO DE CARRINHO==============================
@@ -217,11 +219,6 @@ show tables from shippingdb;
 select * from shipping_order;
 select * from orders;
 select * from order_details;
-
-
-
-
-
 
 
 

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KafkaProducerService {
-
     // tópico para o modelo de leitura (CQRS)
     public static final String CQRS_TOPIC = "order-events";
     // tópico para a orquestração Saga

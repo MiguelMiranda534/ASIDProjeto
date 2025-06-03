@@ -21,13 +21,19 @@ public class OrderSagaListener {
 
     @KafkaListener(topics = TOPIC, groupId = "shipping-saga")
     public void listen(String msg) throws Exception {
+        System.out.println("🛎️ [OrderSagaListener] recebeu mensagem: " + msg);
+
         Map<String,Object> e = mapper.readValue(msg, Map.class);
-        if (!OrderFinalizeRequested.name().equals(e.get("eventType"))) return;
+        if (!OrderFinalizeRequested.name().equals(e.get("eventType"))) {
+            System.out.println("⏭ [OrderSagaListener] ignora eventType=" + e.get("eventType"));
+            return;
+        }
 
         Long orderId = Long.valueOf(e.get("orderId").toString());   // << usar orderId
         String sagaId = e.get("sagaId").toString();
 
         boolean ok = orders.finalizeOrder(orderId);                 // << chamada nova
+        System.out.println("🔄 [OrderSagaListener] resultado finalizeOrder(" + orderId + ") = " + ok);
 
         EventType reply = ok ? OrderFinalized : OrderFinalizeFailed;
         var payload = Map.of(
@@ -37,5 +43,6 @@ public class OrderSagaListener {
                 "sagaId",    sagaId
         );
         kafka.send(TOPIC, mapper.writeValueAsString(payload));
+        System.out.println("📤 [OrderSagaListener] enviou reply: " + payload);
     }
 }

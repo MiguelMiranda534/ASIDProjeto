@@ -20,21 +20,27 @@ public class CheckoutOrchestrator {
     private final KafkaTemplate<String, String> kafka;
     private final WebClient.Builder webClientBuilder;
 
-    // Guarda para cada saga os itens do carrinho (bookId, quantity, unitPrice, subTotal)
+    /** Armazena, para cada sagaId, a lista de itens do carrinho. */
     private final Map<String, List<Map<String, Object>>> sagaItems = new HashMap<>();
-    // Guarda para cada saga os livros que conseguiram reservar stock
-    private final Map<String, Set<Long>> sagaStockOk = new HashMap<>();
-    // Guarda para cada saga os livros que falharam reserva
-    private final Map<String, Set<Long>> sagaStockFail = new HashMap<>();
-    // Guarda para cada saga o userId (pois o evento de lock já traz o userId)
+
+    /** Para cada sagaId, mantém o número de respostas de stock recebidas. */
+    private final Map<String, Integer> sagaStockResponses = new HashMap<>();
+
+    /** Guarda o userId para cada sagaId. */
     private final Map<String, Long> sagaUser = new HashMap<>();
+
+    /** Guarda o shippingOrderId retornado em onStockReserved. */
+    private final Map<String, Long> sagaShippingId = new HashMap<>();
+
+    /** Guarda o orderId real, capturado no evento OrderCreated. */
+    private final Map<String, Long> sagaOrderId = new HashMap<>();
 
     @Autowired
     public CheckoutOrchestrator(ObjectMapper mapper,
                                 KafkaTemplate<String, String> kafka,
                                 WebClient.Builder webClientBuilder) {
         this.mapper = mapper;
-        this.kafka  = kafka;
+        this.kafka = kafka;
         this.webClientBuilder = webClientBuilder;
     }
 
@@ -42,8 +48,8 @@ public class CheckoutOrchestrator {
         String sagaId = UUID.randomUUID().toString();
         publish(Map.of(
                 "eventType", CartLockRequested.name(),
-                "sagaId",    sagaId,
-                "userId",    userId
+                "sagaId", sagaId,
+                "userId", userId
         ));
     }
 
@@ -51,7 +57,7 @@ public class CheckoutOrchestrator {
     public void listen(ConsumerRecord<String, String> rec) throws Exception {
         Map<String, Object> evt = mapper.readValue(rec.value(), Map.class);
         if (!evt.containsKey("eventType")) {
-            System.out.println("⚠️  Evento sem eventType: " + rec.value());
+            System.out.println("⚠️ Evento sem eventType: " + rec.value());
             return;
         }
         EventType type = EventType.valueOf(evt.get("eventType").toString());
@@ -61,22 +67,20 @@ public class CheckoutOrchestrator {
             case CartLockFailed -> cancelSaga(evt, "LOCK_FAILED");
             case StockReserved -> onStockReserved(evt, false);
             case StockReserveFailed -> onStockReserved(evt, true);
+            case OrderCreated -> onOrderCreated(evt);
             case OrderFinalized -> onOrderFinalized(evt);
             case OrderFinalizeFailed -> cancelSaga(evt, "FALHA_FINALIZAR");
-            // Ignora outros aqui
-            case StockReserveRequested, CartLockRequested, StockReleaseRequested, CartClearRequested -> {}
-            default -> {}
+            default -> { /* nada */ }
         }
     }
 
     private void onCartLocked(Map<String, Object> evt) throws Exception {
         String sagaId = evt.get("sagaId").toString();
-        Long userId   = getLong(evt, "userId");
+        Long userId = getLong(evt, "userId");
 
-        // Armazena o userId no contexto da saga
+        System.out.println("🔐 [Saga] Carrinho bloqueado para userId=" + userId + ", sagaId=" + sagaId);
         sagaUser.put(sagaId, userId);
 
-        // Buscar itens do carrinho
         List<?> cart = webClientBuilder.build()
                 .get()
                 .uri("lb://servico-carrinho/cart/cartitem/user/{user}", userId)
@@ -86,158 +90,210 @@ public class CheckoutOrchestrator {
                 .block();
 
         List<Map<String, Object>> items = new ArrayList<>();
-        for (Object c : cart) {
-            Map<?,?> ci = (Map<?,?>) c;
-            Long bookId = Long.valueOf(ci.get("bookId").toString());
-            Integer quantity = Integer.valueOf(ci.get("quantity").toString());
-            Double unitPrice = Double.valueOf(ci.get("unitPrice").toString());
-            Double subTotal = Double.valueOf(ci.get("subTotal").toString());
-            items.add(Map.of(
-                    "bookId", bookId,
-                    "quantity", quantity,
-                    "unitPrice", unitPrice,
-                    "subTotal", subTotal
-            ));
-            // Para cada item, pede reserva de stock
-            publish(Map.of(
-                    "eventType", StockReserveRequested.name(),
-                    "sagaId",    sagaId,
-                    "userId",    userId,
-                    "bookId",    bookId,
-                    "quantity",  quantity
-            ));
+        if (cart != null) {
+            for (Object c : cart) {
+                @SuppressWarnings("unchecked")
+                Map<String, ?> ci = (Map<String, ?>) c;
+                Long bookId = Long.valueOf(ci.get("bookId").toString());
+                Integer qty = Integer.valueOf(ci.get("quantity").toString());
+                Double unit = Double.valueOf(ci.get("unitPrice").toString());
+                Double sub = Double.valueOf(ci.get("subTotal").toString());
+
+                items.add(Map.of(
+                        "bookId", bookId,
+                        "quantity", qty,
+                        "unitPrice", unit,
+                        "subTotal", sub
+                ));
+
+                Map<String, Object> reservePayload = Map.of(
+                        "eventType", StockReserveRequested.name(),
+                        "sagaId", sagaId,
+                        "userId", userId,
+                        "bookId", bookId,
+                        "quantity", qty
+                );
+                System.out.println("📤 [SagaOrchestrator] publicando StockReserveRequested → " + reservePayload);
+                publish(reservePayload);
+            }
         }
+
         sagaItems.put(sagaId, items);
-        sagaStockOk.put(sagaId, new HashSet<>());
-        sagaStockFail.put(sagaId, new HashSet<>());
+        sagaStockResponses.put(sagaId, 0); // Inicializa contador de respostas
+
+        System.out.println("🛒 [Saga] Enviados StockReserveRequested para " + items.size() + " itens.");
     }
 
     private void onStockReserved(Map<String, Object> evt, boolean failed) throws Exception {
         String sagaId = evt.get("sagaId").toString();
         Long bookId = getLong(evt, "bookId");
+        Integer quantity = Integer.valueOf(evt.get("quantity").toString());
+
+        System.out.println("🔔 [SagaOrchestrator] onStockReserved chamado → eventType="
+                + evt.get("eventType")
+                + ", bookId=" + bookId
+                + ", quantity=" + quantity
+                + ", failed=" + failed
+                + ", sagaId=" + sagaId);
 
         if (!sagaItems.containsKey(sagaId)) {
-            System.out.println("⚠️  Evento StockReserved para sagaId desconhecido: " + sagaId);
+            System.out.println("⚠️ [SagaOrchestrator] sagaItems não contém sagaId=" + sagaId);
             return;
         }
+
+        // Incrementa o contador de respostas
+        sagaStockResponses.compute(sagaId, (k, v) -> (v == null) ? 1 : v + 1);
+
         if (failed) {
-            sagaStockFail.get(sagaId).add(bookId);
+            System.out.println("❌ [SagaOrchestrator] falha ao reservar stock → bookId="
+                    + bookId + ", quantity=" + quantity + " (sagaId=" + sagaId + ")");
+            cancelSaga(evt, "STOCK_INSUFICIENTE");
+            return;
         } else {
-            sagaStockOk.get(sagaId).add(bookId);
+            System.out.println("✅ [SagaOrchestrator] stock reservado → bookId="
+                    + bookId + ", quantity=" + quantity + " (sagaId=" + sagaId + ")");
         }
 
-        Set<Long> all = new HashSet<>(sagaStockOk.get(sagaId));
-        all.addAll(sagaStockFail.get(sagaId));
+        int totalEsperado = sagaItems.get(sagaId).size();
+        int totalRecebido = sagaStockResponses.get(sagaId);
+        System.out.println("🧮 [SagaOrchestrator] respostas recebidas: "
+                + totalRecebido + "/" + totalEsperado
+                + " (sagaId=" + sagaId + ")");
 
-        // Se já recebeu resposta para todos os itens:
-        if (all.size() == sagaItems.get(sagaId).size()) {
-            // Se não houve falhas de stock:
-            if (sagaStockFail.get(sagaId).isEmpty()) {
-                Long userId = sagaUser.get(sagaId); // recupera o userId armazenado
-                // 1) Criar ShippingOrder
-                Map<String, Object> shippingOrder = Map.of(
-                        "userId",    userId,
-                        "firstName", "Default",
-                        "lastName",  "User",
-                        "address",   "Default Address",
-                        "city",      "Default City",
-                        "email",     "default@example.com",
-                        "postal_code","12345"
+        if (totalRecebido == totalEsperado) {
+            Long userId = sagaUser.get(sagaId);
+            System.out.println("🚚 [SagaOrchestrator] todos reservados OK, a invocar ShippingService para sagaId="
+                    + sagaId + ", userId=" + userId);
+
+            Map<String, Object> payload = Map.of(
+                    "userId", userId,
+                    "firstName", "Default",
+                    "lastName", "User",
+                    "address", "Default Address",
+                    "city", "Default City",
+                    "email", "default@example.com",
+                    "postal_code", "12345",
+                    "sagaId", sagaId
+            );
+            System.out.println("📤 [SagaOrchestrator] POST /order/shipping body: " + payload);
+
+            Map<?, ?> soResponse = webClientBuilder.build()
+                    .post()
+                    .uri("lb://servico-shipping/order/shipping")
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            System.out.println("📥 [SagaOrchestrator] resposta do ShippingService: " + soResponse);
+
+            if (soResponse != null && soResponse.containsKey("id")) {
+                Long shippingId = Long.valueOf(soResponse.get("id").toString());
+                sagaShippingId.put(sagaId, shippingId);
+                System.out.println("🚚 [SagaOrchestrator] ShippingOrder criado → shippingId="
+                        + shippingId + " (sagaId=" + sagaId + ")");
+            } else {
+                System.out.println("❌ [SagaOrchestrator] falha ao criar ShippingOrder (sagaId=" + sagaId + ")");
+                cancelSaga(evt, "ERRO_CRIAR_SHIPPING");
+            }
+
+            sagaStockResponses.remove(sagaId); // Limpa o contador
+        }
+    }
+
+    private void onOrderCreated(Map<String, Object> evt) throws Exception {
+        String sagaId = evt.get("sagaId").toString();
+        Long orderId = getLong(evt, "orderId");
+
+        if (sagaItems.containsKey(sagaId) && !sagaOrderId.containsKey(sagaId)) {
+            sagaOrderId.put(sagaId, orderId);
+            System.out.println("🛅 [Saga] Capturado OrderCreated → orderId=" + orderId + ", sagaId=" + sagaId);
+
+            Long userId = sagaUser.get(sagaId);
+            Long shippingOrderId = sagaShippingId.get(sagaId);
+
+            for (Map<String, Object> item : sagaItems.get(sagaId)) {
+                Map<String, Object> detailPayload = Map.of(
+                        "quantity", item.get("quantity"),
+                        "subTotal", item.get("subTotal"),
+                        "bookId", item.get("bookId"),
+                        "shippingOrderId", shippingOrderId,
+                        "userId", userId
                 );
-                Map<?,?> so = webClientBuilder.build()
+                webClientBuilder.build()
                         .post()
-                        .uri("lb://servico-shipping/order/shipping")
-                        .bodyValue(shippingOrder)
+                        .uri("lb://servico-shipping/order/details")
+                        .bodyValue(detailPayload)
                         .retrieve()
                         .bodyToMono(Map.class)
                         .block();
-                Long orderId = Long.valueOf(so.get("id").toString());
-
-                // 2) Criar OrderDetails para cada item
-                for (Map<String, Object> item : sagaItems.get(sagaId)) {
-                    Map<String, Object> orderDetail = Map.of(
-                            "quantity",       item.get("quantity"),
-                            "subTotal",       item.get("subTotal"),
-                            "bookId",         item.get("bookId"),
-                            "shippingOrderId",orderId,
-                            "userId",         userId
-                    );
-                    webClientBuilder.build()
-                            .post()
-                            .uri("lb://servico-shipping/order/details")
-                            .bodyValue(orderDetail)
-                            .retrieve()
-                            .bodyToMono(Map.class)
-                            .block();
-                }
-
-                // 3) Solicita finalização de pedido
-                publish(Map.of(
-                        "eventType", OrderFinalizeRequested.name(),
-                        "sagaId",    sagaId,
-                        "orderId",   orderId,
-                        "userId",    userId
-                ));
-            } else {
-                // Se houve falha de stock, cancela saga
-                cancelSaga(evt, "STOCK_INSUFICIENTE");
+                System.out.println("📦 [Saga] Pedido criar OrderDetails: " + detailPayload);
             }
 
-            // Limpar contexto
-            sagaItems.remove(sagaId);
-            sagaStockOk.remove(sagaId);
-            sagaStockFail.remove(sagaId);
-            sagaUser.remove(sagaId);
+            publish(Map.of(
+                    "eventType", OrderFinalizeRequested.name(),
+                    "sagaId", sagaId,
+                    "orderId", orderId,
+                    "userId", userId
+            ));
         }
     }
 
-    private void onOrderFinalized(Map<String,Object> evt) throws Exception {
-        // Quando o pedido estiver fechado, limpa o carrinho
+    private void onOrderFinalized(Map<String, Object> evt) throws Exception {
+        String sagaId = evt.get("sagaId").toString();
+        Long userId = getLong(evt, "userId");
+        System.out.println("✅ [Saga] Pedido finalizado → orderId=" + evt.get("orderId") + ", sagaId=" + sagaId);
+
         publish(Map.of(
                 "eventType", CartClearRequested.name(),
-                "sagaId",    evt.get("sagaId"),
-                "userId",    evt.get("userId")
+                "sagaId", sagaId,
+                "userId", userId
         ));
+
+        sagaItems.remove(sagaId);
+        sagaShippingId.remove(sagaId);
+        sagaOrderId.remove(sagaId);
+        sagaUser.remove(sagaId);
     }
 
-    private void cancelSaga(Map<String,Object> evt, String motivo) throws Exception {
-        System.out.println("⚠️  Cancelar saga (" + motivo + ")");
+    private void cancelSaga(Map<String, Object> evt, String motivo) throws Exception {
         String sagaId = evt.get("sagaId").toString();
+        System.out.println("⚠️ Cancelar saga (" + motivo + "), sagaId=" + sagaId);
 
-        // Se ainda houver itens, libera stock
         if (sagaItems.containsKey(sagaId)) {
             for (Map<String, Object> item : sagaItems.get(sagaId)) {
                 publish(Map.of(
                         "eventType", StockReleaseRequested.name(),
-                        "sagaId",    sagaId,
-                        "bookId",    item.get("bookId"),
-                        "quantity",  item.get("quantity")
+                        "sagaId", sagaId,
+                        "userId", sagaUser.get(sagaId),
+                        "bookId", item.get("bookId"),
+                        "quantity", item.get("quantity")
                 ));
             }
         }
-        // Limpa o carrinho mesmo no cancelamento
+
         publish(Map.of(
                 "eventType", CartClearRequested.name(),
-                "sagaId",    sagaId,
-                "userId",    evt.get("userId")
+                "sagaId", sagaId,
+                "userId", sagaUser.getOrDefault(sagaId, getLong(evt, "userId"))
         ));
 
-        // Limpa contexto
         sagaItems.remove(sagaId);
-        sagaStockOk.remove(sagaId);
-        sagaStockFail.remove(sagaId);
+        sagaStockResponses.remove(sagaId);
+        sagaShippingId.remove(sagaId);
+        sagaOrderId.remove(sagaId);
         sagaUser.remove(sagaId);
     }
 
     private void publish(Map<String, Object> body) throws Exception {
         kafka.send(TOPIC, mapper.writeValueAsString(body));
-        System.out.println("📤 SAGA envia: " + body);
+        System.out.println("📤 [Saga envia] " + body);
     }
 
-    private Long getLong(Map<String,Object> m, String k) {
-        Object v = m.get(k);
-        if (v instanceof Number n) return n.longValue();
-        if (v instanceof String s && !s.isBlank()) return Long.valueOf(s);
+    private Long getLong(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value instanceof Number) return ((Number) value).longValue();
+        if (value instanceof String && !((String) value).isBlank()) return Long.valueOf((String) value);
         return null;
     }
 }

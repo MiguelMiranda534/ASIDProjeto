@@ -30,11 +30,13 @@ public class CartSagaListener {
         if (CartLockRequested.name().equals(e.get("eventType"))) {
             Long userId = Long.valueOf(e.get("userId").toString());
             String sagaId = e.get("sagaId").toString();
+            System.out.println("🔐 [CartSagaListener] tentando lockCartByUserId → userId=" + userId + ", sagaId=" + sagaId);
 
             boolean locked = cartService.lockCartByUserId(userId);
             EventType reply = locked ? CartLocked : CartLockFailed;
 
             List<CartItem> items = cartItemService.getCartItemsByUserId(userId);
+            System.out.println("📋 [CartSagaListener] itens no carrinho para userId=" + userId + " → " + items);
             List<Map<String, Object>> itemList = items.stream()
                     .map(i -> {
                         Map<String, Object> m = new java.util.HashMap<>();
@@ -57,6 +59,7 @@ public class CartSagaListener {
         if (CartClearRequested.name().equals(e.get("eventType"))) {
             Long userId = Long.valueOf(e.get("userId").toString());
             String sagaId = e.containsKey("sagaId") ? e.get("sagaId").toString() : null;
+            System.out.println("🧹 [CartSagaListener] CartClearRequested → userId=" + userId + ", sagaId=" + sagaId);
 
             // 1) Apaga todos os CartItem
             cartItemService.clearCartForUserId(userId);
