@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-import static com.shipping.servicoshipping.saga.SagaConstants.TOPIC;
 import static com.shipping.servicoshipping.saga.EventType.*;
+import static com.shipping.servicoshipping.saga.SagaConstants.TOPIC;
 
 @Service
 public class OrderSagaListener {
@@ -24,12 +24,18 @@ public class OrderSagaListener {
         Map<String,Object> e = mapper.readValue(msg, Map.class);
         if (!OrderFinalizeRequested.name().equals(e.get("eventType"))) return;
 
-        Long userId = Long.valueOf(e.get("userId").toString());
-        boolean ok = orders.finalizeOrder(userId);
+        Long orderId = Long.valueOf(e.get("orderId").toString());   // << usar orderId
+        String sagaId = e.get("sagaId").toString();
+
+        boolean ok = orders.finalizeOrder(orderId);                 // << chamada nova
 
         EventType reply = ok ? OrderFinalized : OrderFinalizeFailed;
-        var payload = Map.of("eventType", reply.name(), "userId", userId);
-        // aqui também usa apenas o teu TOPIC
+        var payload = Map.of(
+                "eventType", reply.name(),
+                "orderId",   orderId,
+                "userId",    e.get("userId"),
+                "sagaId",    sagaId
+        );
         kafka.send(TOPIC, mapper.writeValueAsString(payload));
     }
 }

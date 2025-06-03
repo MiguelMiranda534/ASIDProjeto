@@ -16,83 +16,99 @@ import org.springframework.stereotype.Service;
 public class StockSagaListener {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final BookRepository                bookRepository;
-    private final ObjectMapper                  objectMapper;
+    private final BookRepository bookRepository;
+    private final ObjectMapper objectMapper;
 
     public StockSagaListener(KafkaTemplate<String, String> kafkaTemplate,
                              BookRepository bookRepository,
                              ObjectMapper objectMapper) {
-        this.kafkaTemplate  = kafkaTemplate;
+        this.kafkaTemplate = kafkaTemplate;
         this.bookRepository = bookRepository;
-        this.objectMapper   = objectMapper;
+        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = TOPIC, groupId = "servico-catalogo-saga")
     public void onMessage(String message) {
         try {
-            JsonNode evt  = objectMapper.readTree(message);
-            EventType type = EventType.valueOf(evt.get("eventType").asText());
+            JsonNode evt     = objectMapper.readTree(message);
+            String  typeText = evt.get("eventType").asText();
 
-            // ---------- validação defensiva ----------
-            if (type == StockReserveRequested) {
-                if (!evt.hasNonNull("bookId") || !evt.hasNonNull("quantity")) {
-                    System.err.println("⚠️  StockReserveRequested inválido: " + evt);
-                    publish(StockReserveFailed,
-                            evt.path("orderId").asLong(),
-                            evt.path("bookId").isNumber() ? evt.get("bookId").asLong() : null,
-                            evt.path("quantity").asInt(0));
-                    return;               // não cai o serviço
-                }
+            // 1) Log de todos os eventos recebidos (para debug)
+            System.out.println("📥 StockSagaListener recebeu: " + typeText + " → " + evt.toString());
+
+            // 2) Só nos interessa tratar StockReserveRequested e StockReleaseRequested
+            if (!typeText.equals("StockReserveRequested") &&
+                    !typeText.equals("StockReleaseRequested")) {
+                System.out.println("⏭ Ignorando evento de stock: " + typeText);
+                return;
             }
-            // -----------------------------------------
 
-            Long orderId = evt.has("orderId")  ? evt.get("orderId").asLong()  : null;
-            Long bookId  = evt.has("bookId")   ? evt.get("bookId").asLong()   : null;
-            int  qty     = evt.has("quantity") ? evt.get("quantity").asInt() : 0;
+            // 3) A partir daqui sabemos que é um evento válido para stock
+            EventType type = EventType.valueOf(typeText);
+            String    sagaId = evt.has("sagaId") ? evt.get("sagaId").asText() : null;
+            Long      orderId = evt.has("orderId") ? evt.get("orderId").asLong() : null;
+            Long      bookId  = evt.has("bookId") ? evt.get("bookId").asLong() : null;
+            int       qty     = evt.has("quantity") ? evt.get("quantity").asInt() : 0;
 
+            // 4) Log antes de chamar reserve/release
+            System.out.println("➡️ Processando evento: " + typeText +
+                    " | orderId=" + orderId +
+                    " | bookId="  + bookId  +
+                    " | qty="     + qty    +
+                    " | sagaId="  + sagaId);
+
+            // 5) Dispara o fluxo conforme o tipo
             switch (type) {
-                case StockReserveRequested -> reserve(orderId, bookId, qty);
-                case StockReleaseRequested -> release(orderId, bookId, qty);
-                default -> { /* ignora o resto */ }
+                case StockReserveRequested -> reserve(orderId, bookId, qty, sagaId);
+                case StockReleaseRequested -> release(orderId, bookId, qty, sagaId);
+                default -> { /* nunca chega aqui */ }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    /* ---------- lógica ---------- */
-
-    private void reserve(Long orderId, Long bookId, int qty) {
-        if (bookId == null) {              // já não lança IllegalArgumentException
-            publish(StockReserveFailed, orderId, null, qty);
+    private void reserve(Long orderId, Long bookId, int qty, String sagaId) {
+        System.out.println("🔍 Tentando reservar stock → bookId=" + bookId + ", quantidade=" + qty);
+        if (bookId == null) {
+            System.err.println("⚠️ Sem bookId válido no StockReserveRequested");
+            publish(StockReserveFailed, orderId, null, qty, sagaId);
             return;
         }
         Book book = bookRepository.findById(bookId).orElse(null);
         if (book != null && book.getQuantity() >= qty) {
             book.setQuantity(book.getQuantity() - qty);
             bookRepository.save(book);
-            publish(StockReserved, orderId, bookId, qty);
+            System.out.println("✅ Stock reservado: bookId=" + bookId + ", novo stock=" + book.getQuantity());
+            publish(StockReserved, orderId, bookId, qty, sagaId);
         } else {
-            publish(StockReserveFailed, orderId, bookId, qty);
+            System.err.println("❌ Falha ao reservar stock: bookId=" + bookId +
+                    ", stock disponível=" + (book != null ? book.getQuantity() : "não existe"));
+            publish(StockReserveFailed, orderId, bookId, qty, sagaId);
         }
     }
 
-    private void release(Long orderId, Long bookId, int qty) {
+    private void release(Long orderId, Long bookId, int qty, String sagaId) {
+        System.out.println("♻️ Libertando stock → bookId=" + bookId + ", quantidade=" + qty);
         if (bookId != null) {
             bookRepository.findById(bookId).ifPresent(b -> {
                 b.setQuantity(b.getQuantity() + qty);
                 bookRepository.save(b);
+                System.out.println("✅ Stock reposto: bookId=" + bookId + ", novo stock=" + b.getQuantity());
             });
         }
-        publish(StockReleased, orderId, bookId, qty);
+        publish(StockReleased, orderId, bookId, qty, sagaId);
     }
 
-    private void publish(EventType type, Long orderId, Long bookId, int qty) {
+    private void publish(EventType type, Long orderId, Long bookId, int qty, String sagaId) {
         ObjectNode payload = objectMapper.createObjectNode()
                 .put("eventType", type.name())
-                .put("orderId",  orderId)
-                .put("bookId",   bookId)
+                .put("orderId", orderId)
+                .put("bookId", bookId)
                 .put("quantity", qty);
+        if (sagaId != null) {
+            payload.put("sagaId", sagaId);
+        }
         kafkaTemplate.send(TOPIC, payload.toString());
     }
 }

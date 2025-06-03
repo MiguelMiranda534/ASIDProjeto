@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,8 +51,9 @@ public class AddBookToCartController {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT inválido"));
         }
 
-        System.out.println("\uD83D\uDC64 Controller: Utilizador '" + username + "' a adicionar livro " + bookId + " quantidade " + quantity);
+        System.out.println("👤 Controller: Utilizador '" + username + "' a adicionar livro " + bookId + " quantidade " + quantity);
 
+        // 1) Buscar detalhes do livro no catálogo, para obter o preço
         Mono<Map<String, Object>> bookDetailsMono = webClient.get()
                 .uri("lb://servico-catalogo/catalogo/books/{id}", bookId)
                 .retrieve()
@@ -74,43 +76,75 @@ public class AddBookToCartController {
                         return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possível obter o preço do livro do catálogo."));
                     }
 
-                    Map<String, Object> addBookRequest = new HashMap<>();
-                    addBookRequest.put("bookId", bookId);
-                    addBookRequest.put("username", username);
-                    addBookRequest.put("quantity", quantity);
-                    addBookRequest.put("unitPrice", unitPrice);
-                    addBookRequest.put("subtotal", unitPrice * quantity);
-
-                    System.out.println("➡️ Enviando para o carrinho: " + addBookRequest);
-
-                    return webClient.post()
-                            .uri("lb://servico-carrinho/cart/cartitem/add")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(addBookRequest)
+                    // 2) Buscar userId a partir do username no serviço de Auth
+                    Mono<Map<String, Object>> userMono = webClient.get()
+                            .uri("lb://servico-auth/auth/id/{username}", username)
                             .retrieve()
+                            .onStatus(status -> status.equals(HttpStatus.NOT_FOUND),
+                                    response -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador '" + username + "' não encontrado.")))
                             .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                                     response -> response.bodyToMono(String.class)
-                                            .flatMap(body -> Mono.error(new ResponseStatusException(response.statusCode(), "Erro ao chamar serviço de carrinho: " + body))))
-                            .bodyToMono(String.class)
-                            .flatMap(cartResponseString -> {
-                                System.out.println("✅ Resposta do carrinho: " + cartResponseString);
-                                Map<String, Object> aggregatedResponse = new HashMap<>();
-                                aggregatedResponse.put("message", "Livro adicionado com sucesso");
-                                try {
-                                    Object parsedCartResponse = objectMapper.readValue(cartResponseString, Object.class);
-                                    aggregatedResponse.put("cartResponse", parsedCartResponse);
-                                } catch (JsonProcessingException jsonEx) {
-                                    System.err.println("⚠️ Não foi possível fazer parse da resposta do carrinho como JSON: " + jsonEx.getMessage());
-                                    aggregatedResponse.put("cartResponse", cartResponseString);
-                                }
-                                return Mono.just(ResponseEntity.ok(aggregatedResponse));
-                            })
-                            .doOnError(e -> System.err.println("❌ Erro ao adicionar ao carrinho: " + e.getMessage()));
+                                            .flatMap(body -> Mono.error(new ResponseStatusException(response.statusCode(), "Erro ao chamar Auth: " + body))))
+                            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {});
+
+                    return userMono.flatMap(userMap -> {
+                        Object idObj = userMap.get("id");
+                        if (idObj == null) {
+                            return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID do utilizador não encontrado na resposta do Auth."));
+                        }
+
+                        Long userId;
+                        try {
+                            if (idObj instanceof Number) {
+                                userId = ((Number) idObj).longValue();
+                            } else {
+                                userId = Long.valueOf(idObj.toString());
+                            }
+                        } catch (Exception e) {
+                            return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Formato inválido para userId: " + idObj));
+                        }
+
+                        // 3) Montar payload para o serviço de Carrinho
+                        Map<String, Object> addBookRequest = new HashMap<>();
+                        addBookRequest.put("userId", userId);
+                        addBookRequest.put("username", username);
+                        addBookRequest.put("bookId", Long.valueOf(bookId));
+                        addBookRequest.put("quantity", quantity);
+                        addBookRequest.put("unitPrice", unitPrice);
+                        addBookRequest.put("subTotal", unitPrice * quantity);
+
+                        System.out.println("➡️ Enviando para o carrinho: " + addBookRequest);
+
+                        // 4) Chamar o endpoint de adicionar ao carrinho
+                        return webClient.post()
+                                .uri("lb://servico-carrinho/cart/cartitem/add")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(addBookRequest)
+                                .retrieve()
+                                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                                        response -> response.bodyToMono(String.class)
+                                                .flatMap(body -> Mono.error(new ResponseStatusException(response.statusCode(), "Erro ao chamar serviço de carrinho: " + body))))
+                                .bodyToMono(String.class)
+                                .flatMap(cartResponseString -> {
+                                    System.out.println("✅ Resposta do carrinho: " + cartResponseString);
+                                    Map<String, Object> aggregatedResponse = new HashMap<>();
+                                    aggregatedResponse.put("message", "Livro adicionado com sucesso");
+                                    try {
+                                        Object parsedCartResponse = objectMapper.readValue(cartResponseString, Object.class);
+                                        aggregatedResponse.put("cartResponse", parsedCartResponse);
+                                    } catch (JsonProcessingException jsonEx) {
+                                        System.err.println("⚠️ Não foi possível fazer parse da resposta do carrinho como JSON: " + jsonEx.getMessage());
+                                        aggregatedResponse.put("cartResponse", cartResponseString);
+                                    }
+                                    return Mono.just(ResponseEntity.ok(aggregatedResponse));
+                                })
+                                .doOnError(e -> System.err.println("❌ Erro ao adicionar ao carrinho: " + e.getMessage()));
+                    });
                 })
                 .onErrorResume(ResponseStatusException.class, ex -> {
                     System.err.println("❌ Erro tratado (ResponseStatusException): " + ex.getStatusCode() + " - " + ex.getReason());
                     Map<String, Object> errorAttributes = new HashMap<>();
-                    errorAttributes.put("timestamp", java.time.Instant.now().toString());
+                    errorAttributes.put("timestamp", Instant.now().toString());
                     errorAttributes.put("status", ex.getStatusCode().value());
                     errorAttributes.put("error", HttpStatus.resolve(ex.getStatusCode().value()).getReasonPhrase());
                     errorAttributes.put("message", ex.getReason());
@@ -119,7 +153,7 @@ public class AddBookToCartController {
                 .onErrorResume(Exception.class, ex -> {
                     System.err.println("❌ Erro inesperado no controller AddBookToCart: " + ex.getMessage());
                     Map<String, Object> errorAttributes = new HashMap<>();
-                    errorAttributes.put("timestamp", java.time.Instant.now().toString());
+                    errorAttributes.put("timestamp", Instant.now().toString());
                     errorAttributes.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
                     errorAttributes.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
                     errorAttributes.put("message", "Erro interno no servidor ao processar a adição ao carrinho.");

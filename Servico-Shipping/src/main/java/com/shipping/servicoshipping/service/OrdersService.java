@@ -9,6 +9,6 @@ public interface OrdersService {
     Orders getOrderByShippingOrderId(Long shippingOrderId);
     void updateTotalPrice(Long orderId, double additionalAmount);
     Orders getOrderById(Long orderId);
-    boolean finalizeOrder(Long userId);
+    boolean finalizeOrder(Long orderId);
 
 }

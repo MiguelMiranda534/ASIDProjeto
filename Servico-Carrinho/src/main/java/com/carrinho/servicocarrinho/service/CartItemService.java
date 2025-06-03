@@ -16,8 +16,13 @@ public interface CartItemService {
     void clearCart();
     void resetAutoIncrement();
 
-    // novo: apagar só os itens desse user
-    void clearCartForUser(String userId);
-
+    // antigo:
+    @Deprecated
+    void clearCartForUser(String username);
+    @Deprecated
     List<CartItem> getCartItemsByUsername(String username);
+
+    // NOVOS métodos usando userId:
+    void clearCartForUserId(Long userId);
+    List<CartItem> getCartItemsByUserId(Long userId);
 }

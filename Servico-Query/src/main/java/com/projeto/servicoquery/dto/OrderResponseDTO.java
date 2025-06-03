@@ -7,6 +7,7 @@ public class OrderResponseDTO {
     private Long orderId;
     private Date orderDate;
     private Double totalPrice;
+    private String status; // Novo campo
     private List<OrderItemDTO> items;
     private ShippingDTO shippingDetails;
 
@@ -34,6 +35,14 @@ public class OrderResponseDTO {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public List<OrderItemDTO> getItems() {

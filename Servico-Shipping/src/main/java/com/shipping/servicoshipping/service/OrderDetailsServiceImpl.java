@@ -16,39 +16,24 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
     private OrderDetailsRepository orderDetailsRepository;
 
     @Autowired
-    private OrdersService ordersService; // <<< IMPORTANTE
+    private OrdersService ordersService;
 
     @Autowired
-    private KafkaProducerService   kafkaProducerService;
-
+    private KafkaProducerService kafkaProducerService;
 
     @Override
     public OrderDetails createOrderDetails(OrderDetails orderDetails) {
         System.out.println("➡️  A criar OrderDetails para ShippingOrderID: "
                 + orderDetails.getShippingOrderId());
 
-        /* 1) Guardar o detalhe */
         OrderDetails created = orderDetailsRepository.save(orderDetails);
 
-        /* 2) Buscar/actualizar a encomenda */
         Orders order = ordersService.getOrderByShippingOrderId(
                 orderDetails.getShippingOrderId());
         if (order != null) {
-
-            /* 2a) pedir reserva de stock */
-            kafkaProducerService.sendToSaga(String.format(
-                    "{\"eventType\":\"StockReserveRequested\"," +
-                            "\"orderId\":%d,\"bookId\":%d,\"quantity\":%d}",
-                    order.getId(),
-                    created.getBookId(),
-                    created.getQuantity()
-            ));
-
-            /* 2b) actualizar total */
             ordersService.updateTotalPrice(order.getId(), created.getSubTotal());
             Orders updated = ordersService.getOrderById(order.getId());
 
-            /* 2c) eventos já existentes (CQRS + Saga) */
             String itemAdded = String.format(
                     "{\"eventType\":\"OrderItemAdded\",\"orderId\":%d," +
                             "\"bookId\":%d,\"quantity\":%d,\"subTotal\":%.2f}",
@@ -68,7 +53,6 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
             );
             kafkaProducerService.sendToSaga(totalUpdated);
             kafkaProducerService.sendToCqrs(totalUpdated);
-
         } else {
             System.out.println("⚠️  Nenhuma Order encontrada para ShippingOrderID: "
                     + orderDetails.getShippingOrderId());

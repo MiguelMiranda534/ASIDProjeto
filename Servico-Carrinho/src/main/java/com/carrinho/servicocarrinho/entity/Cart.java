@@ -1,7 +1,7 @@
+// Servico-Carrinho/src/main/java/com/carrinho/servicocarrinho/entity/Cart.java
 package com.carrinho.servicocarrinho.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
 @Entity
@@ -11,6 +11,10 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cartid")
     private Long id;
+
+    // Novo campo
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
@@ -31,6 +35,16 @@ public class Cart {
         this.id = id;
     }
 
+    // === Get/Set para userId ===
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    // === Get/Set para username ===
     public String getUsername() {
         return username;
     }
@@ -39,6 +53,7 @@ public class Cart {
         this.username = username;
     }
 
+    // === Get/Set para createdDate ===
     public LocalDate getCreatedDate() {
         return createdDate;
     }
@@ -47,7 +62,12 @@ public class Cart {
         this.createdDate = createdDate;
     }
 
-    public boolean isLocked()            { return locked; }
+    // === Get/Set para locked ===
+    public boolean isLocked() {
+        return locked;
+    }
 
-    public void setLocked(boolean l)     { this.locked = l; }
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
 }

@@ -24,6 +24,9 @@ public class Orders {
     @Column
     private Long userId;
 
+    @Column
+    private String status = "PENDING"; // Novo campo para status (PENDING/CLOSED)
+
     // Getters e Setters
 
     public Long getId() {
@@ -64,5 +67,13 @@ public class Orders {
 
     public void setShippingOrderID(Long shippingOrderID) {
         this.shippingOrderID = shippingOrderID;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -15,12 +15,13 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public Orders createOrder(Long userId, Long shippingOrderId) {
-        Orders order = new Orders();
-        order.setUserId(userId);
-        order.setOrderDate(new Date());
-        order.setTotalPrice(0.0);
-        order.setShippingOrderID(shippingOrderId);
-        return ordersRepository.save(order);
+        Orders o = new Orders();
+        o.setUserId(userId);
+        o.setOrderDate(new Date());
+        o.setTotalPrice(0.0);
+        o.setShippingOrderID(shippingOrderId);
+        o.setStatus("PENDING");
+        return ordersRepository.save(o);
     }
 
     @Override
@@ -30,21 +31,19 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public void updateTotalPrice(Long orderId, double additionalAmount) {
-        Orders order = ordersRepository.findById(orderId).orElse(null);
-        if (order != null) {
-            order.setTotalPrice(order.getTotalPrice() + additionalAmount);
-            ordersRepository.save(order);
+        Orders o = ordersRepository.findById(orderId).orElse(null);
+        if (o != null) {
+            o.setTotalPrice(o.getTotalPrice() + additionalAmount);
+            ordersRepository.save(o);
         }
     }
 
-    @Override
-    public boolean finalizeOrder(Long userId) {
-        // Exemplo mínimo: apenas marca como "finalizado" se existir
-        Orders order = ordersRepository.findByUserId(userId);
-        if (order == null) return false;
-        // Aqui, se quisesses, podias fazer algo como:
-        // order.setStatus("FINALIZED");
-        // ordersRepository.save(order);
+    @Override                     // ---------- FIX ----------
+    public boolean finalizeOrder(Long orderId) {
+        Orders o = ordersRepository.findById(orderId).orElse(null);
+        if (o == null || !"PENDING".equals(o.getStatus())) return false;
+        o.setStatus("CLOSED");
+        ordersRepository.save(o);
         return true;
     }
 
@@ -52,5 +51,4 @@ public class OrdersServiceImpl implements OrdersService {
     public Orders getOrderById(Long orderId) {
         return ordersRepository.findById(orderId).orElse(null);
     }
-
 }

@@ -56,6 +56,7 @@ public class QueryOrderService {
             response.setOrderId(order.getId());
             response.setOrderDate(order.getOrderDate());
             response.setTotalPrice(order.getTotalPrice());
+            response.setStatus(order.getStatus());
 
             response.setItems(items.stream().map(i -> {
                 OrderItemDTO dto = new OrderItemDTO();
@@ -63,7 +64,6 @@ public class QueryOrderService {
                 dto.setQuantity(i.getQuantity());
                 dto.setSubTotal(i.getSubTotal());
 
-                // NOVO: buscar detalhes do livro
                 queryBookRepository.findById(i.getBookId()).ifPresent(book -> {
                     dto.setBookTitle(book.getTitle());
                     dto.setAuthorName(book.getAuthor());
@@ -72,7 +72,6 @@ public class QueryOrderService {
 
                 return dto;
             }).collect(Collectors.toList()));
-
 
             if (shipping != null) {
                 ShippingDTO shippingDTO = new ShippingDTO();

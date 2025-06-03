@@ -41,6 +41,7 @@ public class OrderEventListener {
                     order.setUserId(Long.valueOf(event.get("userId").toString()));
                     order.setOrderDate(new java.util.Date(Long.parseLong(event.get("orderDate").toString())));
                     order.setTotalPrice(Double.parseDouble(event.get("totalPrice").toString()));
+                    order.setStatus("PENDING");
                     queryOrderRepository.save(order);
                     break;
 
@@ -76,6 +77,14 @@ public class OrderEventListener {
                     }
                     break;
 
+                case "OrderFinalized":
+                    Long finalizedOrderId = Long.valueOf(event.get("orderId").toString());
+                    QueryOrder finalizedOrder = queryOrderRepository.findById(finalizedOrderId).orElse(null);
+                    if (finalizedOrder != null) {
+                        finalizedOrder.setStatus("CLOSED");
+                        queryOrderRepository.save(finalizedOrder);
+                    }
+                    break;
 
                 default:
                     System.out.println("⚠️ Tipo de evento desconhecido: " + eventType);

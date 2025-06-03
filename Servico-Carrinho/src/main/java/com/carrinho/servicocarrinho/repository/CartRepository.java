@@ -7,5 +7,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
-    Cart findByUsername(String username);  // Query for Cart by userId
+
+    // Manter para compatibilidade, mas passaremos a usar o novo:
+    Cart findByUsername(String username);
+
+    // Novo método para buscar pelo user_id:
+    Cart findByUserId(Long userId);
 }

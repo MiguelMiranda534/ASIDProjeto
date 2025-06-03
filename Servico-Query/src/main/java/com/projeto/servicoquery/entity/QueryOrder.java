@@ -18,6 +18,7 @@ public class QueryOrder {
     private Long userId;
     private Date orderDate;
     private Double totalPrice;
+    private String status = "PENDING"; // Novo campo para status
 
     // Getters e Setters
 
@@ -51,5 +52,13 @@ public class QueryOrder {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -11,22 +11,23 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class CartItemServiceImpl implements CartItemService{
+public class CartItemServiceImpl implements CartItemService {
 
     @Autowired
     private CartItemRepository cartItemRepository;
 
     @Autowired
-    private CartService cartService;              // <<< para criar cart se não existir
-
+    private CartService cartService; // para criar Cart se não existir
 
     @Override
     public CartItem createCartItem(CartItem cartItem) {
-        // 1) garantir que existe um Cart para este username
-        String username = cartItem.getUsername();
-        if (cartService.getCartByUsername(username) == null) {
+        // 1) garantir que existe um Cart para este userId
+        Long userId = cartItem.getUserId();
+        if (cartService.getCartByUserId(userId) == null) {
             Cart novo = new Cart();
-            novo.setUsername(username);
+            novo.setUserId(userId);
+            // (opcional) se quiser, pegue o username do CartItem ou defina como null
+            novo.setUsername(cartItem.getUsername());
             novo.setCreatedDate(LocalDate.now());
             cartService.createCart(novo);
         }
@@ -34,80 +35,80 @@ public class CartItemServiceImpl implements CartItemService{
         return cartItemRepository.save(cartItem);
     }
 
-
-    public List<CartItem> getAllCartitem(){
-
+    @Override
+    public List<CartItem> getAllCartitem() {
         return cartItemRepository.findAll();
-
-
     }
 
-    public CartItem getCartItemById(Long id){
-
+    @Override
+    public CartItem getCartItemById(Long id) {
         return cartItemRepository.findById(id).orElse(null);
     }
 
-    public CartItem patchCartQuantity(Long id, CartItem cartItem){
+    @Override
+    public CartItem patchCartQuantity(Long id, CartItem cartItem) {
         CartItem existItem = cartItemRepository.findById(id).orElse(null);
-    
         if (existItem != null) {
-            
             existItem.setQuantity(cartItem.getQuantity());
             cartItemRepository.save(existItem);
-    
             return existItem;
-        } else { 
-            return null;
         }
+        return null;
     }
-    
 
-    public CartItem patchCartSubTotal(Long id, CartItem cartItem){
+    @Override
+    public CartItem patchCartSubTotal(Long id, CartItem cartItem) {
         CartItem existItem = cartItemRepository.findById(id).orElse(null);
-    
         if (existItem != null) {
-            
             existItem.setSubTotal(cartItem.getSubTotal());
             cartItemRepository.save(existItem);
-    
             return existItem;
-        } else { 
-            return null;
         }
+        return null;
     }
 
-
-    public CartItem deleteCartItyItemById(Long id){
-
+    @Override
+    public CartItem deleteCartItyItemById(Long id) {
         CartItem existItem = cartItemRepository.findById(id).orElse(null);
-
-        if(existItem !=null){
-
+        if (existItem != null) {
             cartItemRepository.delete(existItem);
         }
         return null;
     }
 
-
-    public void clearCart(){
-
+    @Override
+    public void clearCart() {
         cartItemRepository.deleteAll();
-        
     }
 
+    @Override
     public void resetAutoIncrement() {
         cartItemRepository.resetAutoIncrement();
     }
 
+    // == métodos antigos por username (marcar como @Deprecated) ==
+    @Deprecated
+    @Override
     public List<CartItem> getCartItemsByUsername(String username) {
-
         return cartItemRepository.findByUsername(username);
-        
     }
 
+    @Deprecated
     @Override
     @Transactional
     public void clearCartForUser(String username) {
         cartItemRepository.deleteByUsername(username);
+    }
+
+    // == NOVOS métodos usando userId: ==
+    @Override
+    public List<CartItem> getCartItemsByUserId(Long userId) {
+        return cartItemRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public void clearCartForUserId(Long userId) {
+        cartItemRepository.deleteByUserId(userId);
     }
 }

@@ -12,4 +12,7 @@ public interface CartService {
     List<Cart> getAllCart();
     Cart getCartByUsername(String username);
     boolean lockCart(String userId);
+    Cart getCartByUserId(Long userId);
+    boolean lockCartByUserId(Long userId);
+    void unlockCartByUserId(Long userId);
 }

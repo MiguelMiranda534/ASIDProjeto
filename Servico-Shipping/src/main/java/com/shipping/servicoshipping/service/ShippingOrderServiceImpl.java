@@ -8,6 +8,7 @@ import com.shipping.servicoshipping.event.KafkaProducerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ShippingOrderServiceImpl implements ShippingOrderService {
@@ -16,41 +17,38 @@ public class ShippingOrderServiceImpl implements ShippingOrderService {
     private ShippingOrderRepository shippingOrderRepository;
 
     @Autowired
-    private OrdersService ordersService;  // <-- Adicionar o OrdersService para podermos criar uma Order!
+    private OrdersService ordersService;
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
     @Override
     public ShippingOrder createShippingOrder(ShippingOrder shippingOrder) {
-        // 1) Guardar o ShippingOrder
         ShippingOrder created = shippingOrderRepository.save(shippingOrder);
-
-        // 2) Criar automaticamente a Order associada
-        Long userId          = created.getUserId();
+        Long userId = created.getUserId();
         Long shippingOrderId = created.getId();
-        ordersService.createOrder(userId, shippingOrderId);
+        Orders order = ordersService.createOrder(userId, shippingOrderId);
 
-        // 3) Disparar evento OrderCreated
+        String sagaId = UUID.randomUUID().toString(); // Gerar sagaId aqui ou receber do Saga
         String orderCreated = String.format(
-                "{\"eventType\":\"OrderCreated\",\"userId\":%d,\"orderDate\":%d,\"totalPrice\":%.2f}",
-                userId, System.currentTimeMillis(), 0.0
+                "{\"eventType\":\"OrderCreated\",\"userId\":%d,\"orderDate\":%d,\"totalPrice\":%.2f,\"orderId\":%d,\"sagaId\":\"%s\"}",
+                userId, System.currentTimeMillis(), 0.0, order.getId(), sagaId
         );
         kafkaProducerService.sendToSaga(orderCreated);
         kafkaProducerService.sendToCqrs(orderCreated);
 
-        // 4) Disparar evento ShippingCreated
         String shippingCreated = String.format(
                 "{\"eventType\":\"ShippingCreated\",\"orderId\":%d," +
                         "\"firstName\":\"%s\",\"lastName\":\"%s\",\"address\":\"%s\"," +
-                        "\"city\":\"%s\",\"email\":\"%s\",\"postalCode\":\"%s\"}",
+                        "\"city\":\"%s\",\"email\":\"%s\",\"postalCode\":\"%s\",\"sagaId\":\"%s\"}",
                 shippingOrderId,
                 created.getFirstName(),
                 created.getLastName(),
                 created.getAddress(),
                 created.getCity(),
                 created.getEmail(),
-                created.getPostal_code()
+                created.getPostal_code(),
+                sagaId
         );
         kafkaProducerService.sendToSaga(shippingCreated);
         kafkaProducerService.sendToCqrs(shippingCreated);

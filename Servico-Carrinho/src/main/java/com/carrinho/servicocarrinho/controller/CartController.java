@@ -15,38 +15,44 @@ public class CartController {
 
     @Autowired
     private CartService cartService;
-    // private UserRepository userRepository;
 
+    // Cria um cart novo; o JSON deve vir com userId e username.
     @PostMapping("/cart")
-    public ResponseEntity<Cart> createCart(@RequestBody Cart createCart){
-
+    public ResponseEntity<Cart> createCart(@RequestBody Cart createCart) {
+        // Exigimos que createCart.getUserId() esteja preenchido.
+        if (createCart.getUserId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Cart updatedCart = cartService.createCart(createCart);
-
-
-
-        return new ResponseEntity<>(updatedCart,HttpStatus.CREATED);
+        return new ResponseEntity<>(updatedCart, HttpStatus.CREATED);
     }
 
     @GetMapping("/cart")
-    public ResponseEntity<List<Cart>> getAllCart(){
-
+    public ResponseEntity<List<Cart>> getAllCart() {
         List<Cart> existcart = cartService.getAllCart();
-
-        return new ResponseEntity<>(existcart,HttpStatus.OK);
+        return new ResponseEntity<>(existcart, HttpStatus.OK);
     }
 
-    @GetMapping("/cart/{username}")
-    public ResponseEntity<Cart> getCartIdByUsername(@PathVariable String username){
-
-        Cart cartId = cartService.getCartByUsername(username);
-
-        if (cartId != null) {
-            return new ResponseEntity<>(cartId,HttpStatus.OK);
+    // NOVO endpoint: busca carrinho pelo userId
+    @GetMapping("/cart/user/{userId}")
+    public ResponseEntity<Cart> getCartByUserId(@PathVariable Long userId) {
+        Cart cart = cartService.getCartByUserId(userId);
+        if (cart != null) {
+            return new ResponseEntity<>(cart, HttpStatus.OK);
         } else {
             return ResponseEntity.notFound().build();
         }
-
-
     }
 
+    // Antigo (opcional, marcamos como deprecated)
+    @Deprecated
+    @GetMapping("/cart/{username}")
+    public ResponseEntity<Cart> getCartByUsername(@PathVariable String username) {
+        Cart cartId = cartService.getCartByUsername(username);
+        if (cartId != null) {
+            return new ResponseEntity<>(cartId, HttpStatus.OK);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

@@ -10,17 +10,21 @@ public class CartItem {
     @Column(name = "id")
     private Long id;
 
+    // Novo campo: userId
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column
     private int quantity;
 
-    @Column
+    @Column(name = "unit_price")
     private Double unitPrice;
 
-    @Column
+    @Column(name = "sub_total")
     private Double subTotal;
 
     @Column(name = "username")
-    private String username;
+    private String username; // pode manter para compatibilidade, mas usaremos userId internamente
 
     @Column(name = "book_id")
     private Long bookId;
@@ -35,6 +39,16 @@ public class CartItem {
         this.id = id;
     }
 
+    // ----- get/set para userId -----
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    // ----- getters/setters existentes -----
     public int getQuantity() {
         return quantity;
     }
@@ -67,7 +81,11 @@ public class CartItem {
         this.username = username;
     }
 
-    public Long getBookId() {return bookId;}
+    public Long getBookId() {
+        return bookId;
+    }
 
-    public void setBookId(Long bookId) {this.bookId = bookId;}
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
 }

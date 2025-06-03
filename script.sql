@@ -190,6 +190,11 @@ show tables from carrinhodb;
 select * from cart;
 select * from cart_item;
 
+UPDATE Cart
+   SET locked = FALSE
+ WHERE user_id = 1;
+
+
 #===========================SERVIÇO DE SHIPPING==============================
 DROP DATABASE IF EXISTS shippingdb;
 CREATE DATABASE shippingdb;
@@ -261,6 +266,11 @@ SELECT * FROM subcategory;
 use querydb;
 show tables from querydb;
 
+ALTER TABLE orders ADD COLUMN status VARCHAR(50) DEFAULT 'PENDING';
+ALTER TABLE query_orders ADD COLUMN status VARCHAR(20) DEFAULT 'PENDING';
 
-
+UPDATE cart
+SET user_id = 1,
+    locked = FALSE
+WHERE username = 'joaosilva';
 
