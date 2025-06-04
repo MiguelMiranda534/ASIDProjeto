@@ -11,7 +11,6 @@ public class WebClientConfig {
 
     // Este bean permite resolver URIs do tipo "lb://servico-carrinho"
     @Bean
-    @LoadBalanced
     public WebClient.Builder loadBalancedWebClientBuilder() {
         return WebClient.builder();
     }

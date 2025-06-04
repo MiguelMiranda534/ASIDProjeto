@@ -9,7 +9,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
     @Bean
-    @LoadBalanced // <--- isto é essencial para suportar "lb://"
     public WebClient.Builder loadBalancedWebClientBuilder() {
         return WebClient.builder();
     }

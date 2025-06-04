@@ -47,16 +47,6 @@ spring:
         #  predicates:
         #    - Path=/gateway/addBookToCart
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-
-  instance:
-    prefer-ip-address: true
-    ip-address: ${HOST_IP:127.0.0.1}
 
 app:
   jwtSecret: B374A26A71490437AA024E4FADD5B497FDFF1A8EA6FF12F6FB65AF2720B59CCF

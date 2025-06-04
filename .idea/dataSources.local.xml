@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-251.25410.129">
+  <component name="dataSourceStorageLocal" created-in="IU-232.9921.47">
     <data-source name="bookstore@localhost" uuid="bc7c793e-9e98-4b43-8d3f-11e444c06ae9">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" exact-version="0" />
       <schema-mapping />
     </data-source>
     <data-source name="bookstore@localhost" uuid="b9a60ce4-3d5a-44e8-aa5d-11ce8cfed764">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" exact-version="0" />
       <schema-mapping />
     </data-source>
     <data-source name="carrinho@localhost" uuid="406d0512-624b-4ae6-ab25-a2bb6ef99287">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" exact-version="0" />
       <schema-mapping />
     </data-source>
     <data-source name="bookstore@localhost" uuid="0203a2ca-735c-4c1c-94b2-f5f8acb837e7">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" exact-version="0" />
       <schema-mapping />
     </data-source>
   </component>
