@@ -194,6 +194,8 @@ select * from carrinhodb.cart_item;
 
 insert into carrinhodb.cart (user_id, username) values ('1', 'MarcoHoracio');
 
+delete from carrinhodb.cart where username = 'MarcoHoracio';
+
 UPDATE cart
    SET locked = FALSE
  WHERE user_id = 1;
@@ -222,9 +224,9 @@ show tables from shippingdb;
 #VALUES (1, 14.99, 1, 7, 1);
 
 
-select * from shipping_order;
-select * from orders;
-select * from order_details;
+select * from shippingdb.shipping_order;
+select * from shippingdb.orders;
+select * from shippingdb.order_details;
 
 
 
