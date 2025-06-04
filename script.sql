@@ -189,11 +189,17 @@ CREATE DATABASE carrinhodb;
 USE carrinhodb;
 show tables from carrinhodb;
 
-select * from cart;
-select * from cart_item;
+select * from carrinhodb.cart;
+select * from carrinhodb.cart_item;
 
-UPDATE Cart
+insert into carrinhodb.cart (user_id, username) values ('1', 'MarcoHoracio');
+
+UPDATE cart
    SET locked = FALSE
+ WHERE user_id = 1;
+
+UPDATE cart
+   SET created_date = '2025-06-04'
  WHERE user_id = 1;
 
 

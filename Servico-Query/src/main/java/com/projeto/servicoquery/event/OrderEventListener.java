@@ -1,9 +1,11 @@
 package com.projeto.servicoquery.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.projeto.servicoquery.entity.QueryBook;
 import com.projeto.servicoquery.entity.QueryOrder;
 import com.projeto.servicoquery.entity.QueryOrderItem;
 import com.projeto.servicoquery.entity.QueryShipping;
+import com.projeto.servicoquery.repository.QueryBookRepository;
 import com.projeto.servicoquery.repository.QueryOrderItemRepository;
 import com.projeto.servicoquery.repository.QueryOrderRepository;
 import com.projeto.servicoquery.repository.QueryShippingRepository;
@@ -25,6 +27,10 @@ public class OrderEventListener {
 
     @Autowired
     private QueryShippingRepository queryShippingRepository;
+
+    // Novo: repositório para gravar QueryBook
+    @Autowired
+    private QueryBookRepository queryBookRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -48,14 +54,36 @@ public class OrderEventListener {
                     order.setStatus("PENDING");
                     queryOrderRepository.save(order);
                 }
+
                 case "OrderItemAdded" -> {
+                    // 1) salva o QueryOrderItem básico (orderId, bookId, quantity, subTotal)
                     QueryOrderItem item = new QueryOrderItem();
                     item.setOrderId(Long.valueOf(event.get("orderId").toString()));
                     item.setBookId(Long.valueOf(event.get("bookId").toString()));
                     item.setQuantity(Integer.parseInt(event.get("quantity").toString()));
                     item.setSubTotal(Double.parseDouble(event.get("subTotal").toString()));
                     queryOrderItemRepository.save(item);
+
+                    // 2) SALVA (ou ATUALIZA) o QueryBook usando bookTitle, authorName e bookPrice do payload
+                    if (event.containsKey("bookTitle")
+                            && event.containsKey("authorName")
+                            && event.containsKey("bookPrice")) {
+
+                        Long bookId = Long.valueOf(event.get("bookId").toString());
+                        String bookTitle = event.get("bookTitle").toString();
+                        String authorName = event.get("authorName").toString();
+                        Double bookPrice = Double.parseDouble(event.get("bookPrice").toString());
+
+                        QueryBook qb = new QueryBook();
+                        qb.setId(bookId);
+                        qb.setTitle(bookTitle);
+                        qb.setAuthor(authorName);
+                        qb.setPrice(bookPrice);
+
+                        queryBookRepository.save(qb);
+                    }
                 }
+
                 case "ShippingCreated" -> {
                     QueryShipping shipping = new QueryShipping();
                     shipping.setOrderId(Long.valueOf(event.get("orderId").toString()));
@@ -67,6 +95,7 @@ public class OrderEventListener {
                     shipping.setPostalCode((String) event.get("postalCode"));
                     queryShippingRepository.save(shipping);
                 }
+
                 case "OrderTotalUpdated" -> {
                     Long orderId = Long.valueOf(event.get("orderId").toString());
                     Double newTotalPrice = Double.parseDouble(event.get("newTotalPrice").toString());
@@ -76,6 +105,7 @@ public class OrderEventListener {
                         queryOrderRepository.save(o);
                     });
                 }
+
                 case "OrderFinalized" -> {
                     Long orderId = Long.valueOf(event.get("orderId").toString());
                     queryOrderRepository.findById(orderId).ifPresent(o -> {
@@ -83,6 +113,7 @@ public class OrderEventListener {
                         queryOrderRepository.save(o);
                     });
                 }
+
                 default -> System.out.println("⚠️ Tipo de evento desconhecido: " + eventType);
             }
 

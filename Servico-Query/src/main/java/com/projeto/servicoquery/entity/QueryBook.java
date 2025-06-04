@@ -1,8 +1,6 @@
 package com.projeto.servicoquery.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -11,7 +9,7 @@ import jakarta.persistence.Table;
 public class QueryBook {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Remove @GeneratedValue e trate esse campo como “assigned ID”
     private Long id;
 
     private String title;

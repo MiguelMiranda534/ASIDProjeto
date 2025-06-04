@@ -13,40 +13,29 @@ spring:
           lower-case-service-id: true
       routes:
         - id: servico-auth
-          uri: lb://servico-auth
+          uri: http://servico-auth:8081
           predicates:
             - Path=/auth/**
-
         - id: servico-catalogo
-          uri: lb://servico-catalogo
+          uri: http://servico-catalogo:8082
           predicates:
             - Path=/catalogo/**
-
         - id: servico-carrinho
-          uri: lb://servico-carrinho
+          uri: http://servico-carrinho:8083
           predicates:
             - Path=/cart/**
-
         - id: servico-shipping
-          uri: lb://servico-shipping
+          uri: http://servico-shipping:8084
           predicates:
             - Path=/order/**
-
         - id: servico-query
-          uri: lb://servico-query
+          uri: http://servico-query:8085
           predicates:
             - Path=/query/**
-
         - id: servico-saga
-          uri: lb://servico-saga
+          uri: http://servico-saga:8086
           predicates:
             - Path=/checkout/**
-
-        #- id: gateway-composition
-        #  uri: http://dummy-host
-        #  predicates:
-        #    - Path=/gateway/addBookToCart
-
 
 app:
   jwtSecret: B374A26A71490437AA024E4FADD5B497FDFF1A8EA6FF12F6FB65AF2720B59CCF
