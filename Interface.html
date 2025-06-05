@@ -217,7 +217,7 @@
     <div class="card">
         <h2>Login</h2>
         <div class="form-group">
-            <label for="username">Usuário:</label>
+            <label for="username">Utilizador:</label>
             <input type="text" id="username" required>
         </div>
         <div class="form-group">
@@ -231,7 +231,7 @@
     <div class="card">
         <h2>Registro</h2>
         <div class="form-group">
-            <label for="regUsername">Usuário:</label>
+            <label for="regUsername">Utilizador:</label>
             <input type="text" id="regUsername" required>
         </div>
         <div class="form-group">
@@ -367,7 +367,7 @@
                 currentToken = data.token;
                 currentUsername = username;
 
-                // Obter ID do usuário
+                // Obter ID do Utilizador
                 try {
                     const userResponse = await fetch(`http://localhost:8080/auth/id/${username}`, {
                         headers: {
@@ -378,17 +378,17 @@
                     if (userResponse.ok) {
                         const userData = await userResponse.json();
                         currentUserId = userData.id;
-                        loggedInUser.textContent = `Usuário: ${username}`;
+                        loggedInUser.textContent = `Utilizador: ${username}`;
 
                         showPage(mainPage);
                         loadBooks();
                         loadCart();
                     } else {
                         const error = await userResponse.text();
-                        showError('loginError', 'Erro ao obter ID do usuário: ' + error);
+                        showError('loginError', 'Erro ao obter ID do Utilizador: ' + error);
                     }
                 } catch (error) {
-                    showError('loginError', 'Erro ao obter ID do usuário: ' + error.message);
+                    showError('loginError', 'Erro ao obter ID do Utilizador: ' + error.message);
                 }
             } else {
                 const error = await response.text();
@@ -501,23 +501,36 @@
     }
 
     // Funções de carrinho
-    function addToCart(bookId) {
+    async function addToCart(bookId) {
         const quantity = parseInt(document.getElementById(`qty-${bookId}`).value);
-
-        if (isNaN(quantity)) {
+        if (isNaN(quantity) || quantity <= 0) {
             alert('Por favor, insira uma quantidade válida.');
             return;
         }
-
-        if (cart[bookId]) {
-            cart[bookId] += quantity;
+        const book = booksCache[bookId];
+        const response = await fetch('http://localhost:8080/cart/cartitem/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUserId,
+                username: currentUsername,  // Add this line
+                bookId: parseInt(bookId),
+                quantity: quantity,
+                unitPrice: book.price,
+                subTotal: book.price * quantity
+            })
+        });
+        if (response.ok) {
+            await loadCart(); // Fetch updated cart from server
+            renderCart();
+            switchTab('cartTab');
         } else {
-            cart[bookId] = quantity;
+            const error = await response.text();
+            alert('Erro ao adicionar ao carrinho: ' + error);
         }
-
-        renderCart();
-        // Mudar para a aba do carrinho
-        switchTab('cartTab');
     }
 
     function removeFromCart(bookId) {
@@ -525,111 +538,75 @@
         renderCart();
     }
 
-    function renderCart() {
-        cartItems.innerHTML = '';
-
-        if (Object.keys(cart).length === 0) {
-            cartItems.innerHTML = '<p>Seu carrinho está vazio.</p>';
-            return;
-        }
-
-        let total = 0;
-
-        Object.keys(cart).forEach(bookId => {
-            const book = booksCache[bookId];
-            if (!book) return;
-
+    async function loadCart() {
+    const response = await fetch(`http://localhost:8080/cart/cartitem/user/${currentUserId}`, {
+        headers: { 'Authorization': `Bearer ${currentToken}` }
+    });
+    if (response.ok) {
+        cart = await response.json();
+    } else {
+        const error = await response.text();
+        showError('cartItems', 'Erro ao carregar carrinho: ' + error);
+    }
+}
+function renderCart() {
+    cartItems.innerHTML = '';
+    if (!cart || cart.length === 0) {
+        cartItems.innerHTML = '<p>Seu carrinho está vazio.</p>';
+        return;
+    }
+    let total = 0;
+    cart.forEach(item => {
+        const book = booksCache[item.bookId];
+        if (book) {
             const cartItem = document.createElement('div');
             cartItem.className = 'cart-item';
             cartItem.innerHTML = `
-                    <div>
-                        <h4>${book.title}</h4>
-                        <p>Preço unitário: €${book.price.toFixed(2)}</p>
-                        <p>Quantidade: ${cart[bookId]}</p>
-                        <p>Subtotal: €${(book.price * cart[bookId]).toFixed(2)}</p>
-                    </div>
-                    <button class="btn-danger" onclick="removeFromCart(${bookId})">Remover</button>
-                `;
-            cartItems.appendChild(cartItem);
-
-            total += book.price * cart[bookId];
-        });
-
-        const totalDiv = document.createElement('div');
-        totalDiv.className = 'cart-item';
-        totalDiv.style.fontWeight = 'bold';
-        totalDiv.innerHTML = `
-                <div>Total do Carrinho:</div>
-                <div>€${total.toFixed(2)}</div>
+                <div>
+                    <h4>${book.title}</h4>
+                    <p>Preço unitário: €${book.price.toFixed(2)}</p>
+                    <p>Quantidade: ${item.quantity}</p>
+                    <p>Subtotal: €${item.subTotal.toFixed(2)}</p>
+                </div>
+                <button class="btn-danger" onclick="removeFromCart(${item.bookId})">Remover</button>
             `;
-        cartItems.appendChild(totalDiv);
-    }
+            cartItems.appendChild(cartItem);
+            total += item.subTotal;
+        }
+    });
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'cart-item';
+    totalDiv.style.fontWeight = 'bold';
+    totalDiv.innerHTML = `
+        <div>Total do Carrinho:</div>
+        <div>€${total.toFixed(2)}</div>
+    `;
+    cartItems.appendChild(totalDiv);
+}
 
     async function checkout() {
-        if (Object.keys(cart).length === 0) {
-            alert('Seu carrinho está vazio!');
-            return;
-        }
-
-        try {
-            // Criar pedido de envio
-            const shippingResponse = await fetch('http://localhost:8080/order/shipping', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${currentToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: currentUserId,
-                    firstName: "Nome",
-                    lastName: "Sobrenome",
-                    address: "Endereço do usuário",
-                    city: "Cidade do usuário",
-                    email: "usuario@example.com",
-                    postalCode: "12345-678"
-                })
-            });
-
-            if (shippingResponse.ok) {
-                const shippingData = await shippingResponse.json();
-                const shippingId = shippingData.id;
-
-                // Adicionar itens ao pedido
-                for (const [bookId, quantity] of Object.entries(cart)) {
-                    await fetch('http://localhost:8080/order/details', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${currentToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            shippingOrderId: shippingId,
-                            bookId: parseInt(bookId),
-                            quantity: quantity,
-                            userId: currentUserId
-                        })
-                    });
-                }
-
-                // Finalizar pedido
-                await fetch(`http://localhost:8080/checkout/${currentUserId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-
-                alert('Compra finalizada com sucesso!');
-                cart = {};
-                renderCart();
-            } else {
-                const error = await shippingResponse.text();
-                alert(`Erro ao finalizar compra: ${error}`);
-            }
-        } catch (error) {
-            alert('Erro ao finalizar compra: ' + error.message);
-        }
+    await loadCart();
+    if (!cart || cart.length === 0) {
+        alert('Seu carrinho está vazio!');
+        return;
     }
+    try {
+        const response = await fetch(`http://localhost:8080/checkout/${currentUserId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        if (response.ok) {
+            alert('Compra finalizada com sucesso!');
+            cart = [];
+            renderCart();
+        } else {
+            const error = await response.text();
+            alert(`Erro ao finalizar compra: ${error}`);
+        }
+    } catch (error) {
+        alert('Erro ao finalizar compra: ' + error.message);
+    }
+}
 
     // Funções de pedidos
     async function getOrders() {

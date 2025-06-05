@@ -130,9 +130,13 @@ use catalogodb;
 
 INSERT INTO category (name) VALUES ('Ficção');
 
+INSERT INTO category (name) VALUES ('Biografia');
+
 INSERT INTO subcategory (name, category_id) VALUES ('Fantasia', 1);
+INSERT INTO subcategory (name, category_id) VALUES ('Biografia Futebolística', 2);
 
 INSERT INTO author (author_name) VALUES ('J.K. Rowling');
+INSERT INTO author (author_name) VALUES ('Cristiano Ronaldo');
 
 INSERT INTO book (
   title,
@@ -178,9 +182,35 @@ INSERT INTO book (
   1
 );
 
+INSERT INTO book (
+  title,
+  isbn_number,
+  image,
+  description,
+  price,
+  quantity,
+  author_id,
+  category_id,
+  subcategory_id
+) VALUES (
+  'A Vida de Cristiano Ronaldo',
+  '9789722325941',
+  NULL,
+  'História de Vida.',
+  24.99,
+  1000,
+  2,
+  2,
+  2
+);
+
 UPDATE book
 SET quantity = 200
 WHERE title = 'Harry Potter e a Pedra Filosofal';
+
+select * from category;
+select * from subcategory;
+select * from author;
 
 
 #===========================SERVIÇO DE CARRINHO==============================
@@ -196,13 +226,15 @@ insert into carrinhodb.cart (user_id, username) values ('1', 'MarcoHoracio');
 
 delete from carrinhodb.cart where username = 'MarcoHoracio';
 
-UPDATE cart
+UPDATE carrinhodb.cart
    SET locked = FALSE
- WHERE user_id = 1;
+ WHERE user_id = 4;
 
 UPDATE cart
    SET created_date = '2025-06-04'
  WHERE user_id = 1;
+
+delete from carrinhodb.cart_item where username = "user_26179";
 
 
 #===========================SERVIÇO DE SHIPPING==============================
@@ -237,9 +269,9 @@ CREATE DATABASE IF NOT EXISTS querydb;
 USE querydb;
 show tables from querydb;
 
-select * from query_order_items;
-select * from query_orders;
-select * from query_shipping;
+select * from querydb.query_order_items;
+select * from querydb.query_orders;
+select * from querydb.query_shipping;
 
 
 INSERT INTO query_books (id, title, author, price) VALUES (
