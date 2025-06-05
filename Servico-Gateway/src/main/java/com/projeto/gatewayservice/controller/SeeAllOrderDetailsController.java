@@ -121,7 +121,7 @@ public class SeeAllOrderDetailsController {
 
                                 // monta o JSON de resposta
                                 Map<String, Object> response = new HashMap<>();
-                                response.put("userDetails", user);
+                                response.put("userDetails", filterUserDetails(user));
                                 response.put("shippingDetails", shipping);
                                 response.put("items", items);
                                 return ResponseEntity.ok(response);
@@ -162,6 +162,15 @@ public class SeeAllOrderDetailsController {
                         ex -> Mono.just(Map.of("error", "Usuário não encontrado", "id", id)))
                 .onErrorResume(WebClientResponseException.class,
                         ex -> Mono.just(Map.of("error", "Erro ao buscar utilizador", "id", id)));
+    }
+
+    private Map<String, Object> filterUserDetails(Map<String, Object> user) {
+        Map<String, Object> filtered = new HashMap<>();
+        filtered.put("id", user.get("id"));
+        filtered.put("fullname", user.get("fullname"));
+        filtered.put("username", user.get("username"));
+        filtered.put("email", user.get("email"));
+        return filtered;
     }
 
     private Mono<Map<String, Object>> getBookDetails(Long id) {
