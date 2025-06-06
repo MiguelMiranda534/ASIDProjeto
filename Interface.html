@@ -276,9 +276,37 @@
 
     <!-- Carrinho -->
     <div id="cartTab" class="section">
+        <div id="shippingDetailsForm" style="display: none;">
+            <h3>Informações de Envio</h3>
+            <div class="form-group">
+                <label for="firstName">Nome:</label>
+                <input type="text" id="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Sobrenome:</label>
+                <input type="text" id="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="address">Endereço:</label>
+                <input type="text" id="address" required>
+            </div>
+            <div class="form-group">
+                <label for="city">Cidade:</label>
+                <input type="text" id="city" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="postalCode">Código Postal:</label>
+                <input type="text" id="postalCode" required>
+            </div>
+            <button onclick="finalizeCheckout()">Confirmar Envio e Finalizar Compra</button>
+        </div>
         <h2>Seu Carrinho</h2>
         <div id="cartItems"></div>
-        <button onclick="checkout()" style="margin-top: 20px;">Finalizar Compra</button>
+        <button onclick="showShippingDetailsForm()" style="margin-top: 20px;">Finalizar Compra</button>
     </div>
 
     <!-- Pedidos -->
@@ -306,7 +334,7 @@
     let currentToken = null;
     let currentUserId = null;
     let currentUsername = null;
-    let cart = {};
+    let cart = [];
     let booksCache = {};
 
     // Elementos DOM
@@ -443,7 +471,7 @@
         currentToken = null;
         currentUserId = null;
         currentUsername = null;
-        cart = {};
+        cart = [];
         showPage(loginPage);
         // Limpar campos de login
         document.getElementById('username').value = '';
@@ -534,7 +562,7 @@
     }
 
     function removeFromCart(bookId) {
-        delete cart[bookId];
+        cart = cart.filter(item => item.bookId !== bookId);
         renderCart();
     }
 
@@ -584,29 +612,54 @@ function renderCart() {
     cartItems.appendChild(totalDiv);
 }
 
-    async function checkout() {
-    await loadCart();
-    if (!cart || cart.length === 0) {
-        alert('Seu carrinho está vazio!');
-        return;
-    }
-    try {
-        const response = await fetch(`http://localhost:8080/checkout/${currentUserId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        if (response.ok) {
-            alert('Compra finalizada com sucesso!');
-            cart = [];
-            renderCart();
-        } else {
-            const error = await response.text();
-            alert(`Erro ao finalizar compra: ${error}`);
+    async function finalizeCheckout() {
+        // Recolher os valores dos inputs de envio
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName  = document.getElementById('lastName').value.trim();
+        const address   = document.getElementById('address').value.trim();
+        const city      = document.getElementById('city').value.trim();
+        const email     = document.getElementById('email').value.trim();
+        const postalCode= document.getElementById('postalCode').value.trim();
+
+        // Validação básica
+        if (!firstName || !lastName || !address || !city || !email || !postalCode) {
+            alert('Por favor, preencha todos os campos de envio.');
+            return;
         }
-    } catch (error) {
-        alert('Erro ao finalizar compra: ' + error.message);
+
+        const shippingDetails = {
+            firstName: firstName,
+            lastName:  lastName,
+            address:   address,
+            city:      city,
+            email:     email,
+            postal_code: postalCode
+        };
+
+        try {
+            const response = await fetch(`http://localhost:8080/checkout/${currentUserId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(shippingDetails)
+            });
+
+            if (response.ok) {
+                alert('Compra finalizada com sucesso!');
+                cart = [];
+                renderCart();
+                document.getElementById('shippingDetailsForm').style.display = 'none';
+                switchTab('booksTab');
+            } else {
+                const errorText = await response.text();
+                alert('Erro ao finalizar compra: ' + errorText);
+            }
+        } catch (err) {
+            alert('Erro ao finalizar compra: ' + err.message);
+        }
     }
-}
 
     // Funções de pedidos
     async function getOrders() {
@@ -638,6 +691,16 @@ function renderCart() {
         } catch (error) {
             showError('ordersList', 'Erro na conexão: ' + error.message);
         }
+    }
+
+    function showShippingDetailsForm() {
+        if (!cart || cart.length === 0) {
+            alert('O seu carrinho está vazio!');
+            return;
+        }
+        document.getElementById('shippingDetailsForm').style.display = 'block';
+        // Opcional: scroll até ao formulário, se quiseres
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
     function renderOrders(orders) {

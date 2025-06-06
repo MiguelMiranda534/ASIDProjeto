@@ -20,20 +20,12 @@ public class CheckoutOrchestrator {
     private final KafkaTemplate<String, String> kafka;
     private final WebClient.Builder webClientBuilder;
 
-    /** Armazena, para cada sagaId, a lista de itens do carrinho. */
     private final Map<String, List<Map<String, Object>>> sagaItems = new HashMap<>();
-
-    /** Para cada sagaId, mantém o número de respostas de stock recebidas. */
     private final Map<String, Integer> sagaStockResponses = new HashMap<>();
-
-    /** Guarda o userId para cada sagaId. */
     private final Map<String, Long> sagaUser = new HashMap<>();
-
-    /** Guarda o shippingOrderId retornado em onStockReserved. */
     private final Map<String, Long> sagaShippingId = new HashMap<>();
-
-    /** Guarda o orderId real, capturado no evento OrderCreated. */
     private final Map<String, Long> sagaOrderId = new HashMap<>();
+    private final Map<String, Map<String, Object>> sagaShippingDetails = new HashMap<>();
 
     @Autowired
     public CheckoutOrchestrator(ObjectMapper mapper,
@@ -44,8 +36,9 @@ public class CheckoutOrchestrator {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public void startSaga(Long userId) throws Exception {
+    public void startSaga(Long userId, Map<String, Object> shippingDetails) throws Exception {
         String sagaId = UUID.randomUUID().toString();
+        sagaShippingDetails.put(sagaId, shippingDetails);
         publish(Map.of(
                 "eventType", CartLockRequested.name(),
                 "sagaId", sagaId,
@@ -119,7 +112,7 @@ public class CheckoutOrchestrator {
         }
 
         sagaItems.put(sagaId, items);
-        sagaStockResponses.put(sagaId, 0); // Inicializa contador de respostas
+        sagaStockResponses.put(sagaId, 0);
 
         System.out.println("🛒 [Saga] Enviados StockReserveRequested para " + items.size() + " itens.");
     }
@@ -141,7 +134,6 @@ public class CheckoutOrchestrator {
             return;
         }
 
-        // Incrementa o contador de respostas
         sagaStockResponses.compute(sagaId, (k, v) -> (v == null) ? 1 : v + 1);
 
         if (failed) {
@@ -165,39 +157,44 @@ public class CheckoutOrchestrator {
             System.out.println("🚚 [SagaOrchestrator] todos reservados OK, a invocar ShippingService para sagaId="
                     + sagaId + ", userId=" + userId);
 
-            Map<String, Object> payload = Map.of(
-                    "userId", userId,
-                    "firstName", "Default",
-                    "lastName", "User",
-                    "address", "Default Address",
-                    "city", "Default City",
-                    "email", "default@example.com",
-                    "postal_code", "12345",
-                    "sagaId", sagaId
-            );
-            System.out.println("📤 [SagaOrchestrator] POST /order/shipping body: " + payload);
+            Map<String, Object> userShippingDetails = sagaShippingDetails.get(sagaId);
+            if (userShippingDetails != null) {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("userId", userId);
+                payload.put("firstName", userShippingDetails.get("firstName"));
+                payload.put("lastName", userShippingDetails.get("lastName"));
+                payload.put("address", userShippingDetails.get("address"));
+                payload.put("city", userShippingDetails.get("city"));
+                payload.put("email", userShippingDetails.get("email"));
+                payload.put("postal_code", userShippingDetails.get("postal_code"));
+                payload.put("sagaId", sagaId);
 
-            Map<?, ?> soResponse = webClientBuilder.build()
-                    .post()
-                    .uri("http://servico-shipping:8084/order/shipping")
-                    .bodyValue(payload)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+                System.out.println("📤 [SagaOrchestrator] POST /order/shipping body: " + payload);
 
-            System.out.println("📥 [SagaOrchestrator] resposta do ShippingService: " + soResponse);
+                Map<?, ?> soResponse = webClientBuilder.build()
+                        .post()
+                        .uri("http://servico-shipping:8084/order/shipping")
+                        .bodyValue(payload)
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .block();
 
-            if (soResponse != null && soResponse.containsKey("id")) {
-                Long shippingId = Long.valueOf(soResponse.get("id").toString());
-                sagaShippingId.put(sagaId, shippingId);
-                System.out.println("🚚 [SagaOrchestrator] ShippingOrder criado → shippingId="
-                        + shippingId + " (sagaId=" + sagaId + ")");
+                System.out.println("📥 [SagaOrchestrator] resposta do ShippingService: " + soResponse);
+
+                if (soResponse != null && soResponse.containsKey("id")) {
+                    Long shippingId = Long.valueOf(soResponse.get("id").toString());
+                    sagaShippingId.put(sagaId, shippingId);
+                    System.out.println("🚚 [SagaOrchestrator] ShippingOrder criado → shippingId="
+                            + shippingId + " (sagaId=" + sagaId + ")");
+                } else {
+                    System.out.println("❌ [SagaOrchestrator] falha ao criar ShippingOrder (sagaId=" + sagaId + ")");
+                    cancelSaga(evt, "ERRO_CRIAR_SHIPPING");
+                }
+
+                sagaStockResponses.remove(sagaId);
             } else {
-                System.out.println("❌ [SagaOrchestrator] falha ao criar ShippingOrder (sagaId=" + sagaId + ")");
-                cancelSaga(evt, "ERRO_CRIAR_SHIPPING");
+                throw new RuntimeException("Detalhes de envio não encontrados para sagaId: " + sagaId);
             }
-
-            sagaStockResponses.remove(sagaId); // Limpa o contador
         }
     }
 
@@ -254,6 +251,7 @@ public class CheckoutOrchestrator {
         sagaShippingId.remove(sagaId);
         sagaOrderId.remove(sagaId);
         sagaUser.remove(sagaId);
+        sagaShippingDetails.remove(sagaId);
     }
 
     private void cancelSaga(Map<String, Object> evt, String motivo) throws Exception {
@@ -283,6 +281,7 @@ public class CheckoutOrchestrator {
         sagaShippingId.remove(sagaId);
         sagaOrderId.remove(sagaId);
         sagaUser.remove(sagaId);
+        sagaShippingDetails.remove(sagaId);
     }
 
     private void publish(Map<String, Object> body) throws Exception {
