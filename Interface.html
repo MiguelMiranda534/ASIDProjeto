@@ -613,7 +613,6 @@
                     <p>Quantidade: ${item.quantity}</p>
                     <p>Subtotal: €${item.subTotal.toFixed(2)}</p>
                 </div>
-                <!-- nota o uso de item.id e não item.bookId -->
                 <button class="btn-danger" onclick="removeFromCart(${item.id})">Remover</button>
                 `;
             cartItems.appendChild(cartItem);
