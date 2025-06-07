@@ -23,6 +23,7 @@ public class CheckoutOrchestrator {
     private final Map<String, Long> sagaShippingId = new HashMap<>();
     private final Map<String, Long> sagaOrderId = new HashMap<>();
     private final Map<String, Map<String, Object>> sagaShippingDetails = new HashMap<>();
+    private final Map<String, String> sagaStatus = new HashMap<>();
 
     @Autowired
     public CheckoutOrchestrator(ObjectMapper mapper,
@@ -33,8 +34,8 @@ public class CheckoutOrchestrator {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public void startSaga(Long userId, Map<String, Object> shippingDetails) throws Exception {
-        String sagaId = UUID.randomUUID().toString();
+    public void startSaga(String sagaId, Long userId, Map<String, Object> shippingDetails) throws Exception {
+        sagaStatus.put(sagaId, "IN_PROGRESS");
         sagaShippingDetails.put(sagaId, shippingDetails);
         publish(Map.of(
                 "eventType", EventType.CartLockRequested.name(),
@@ -245,13 +246,13 @@ public class CheckoutOrchestrator {
         String sagaId = evt.get("sagaId").toString();
         Long userId = getLong(evt, "userId");
         System.out.println("✅ [Saga] Pedido finalizado → orderId=" + evt.get("orderId") + ", sagaId=" + sagaId);
-
         publish(Map.of(
                 "eventType", EventType.CartClearRequested.name(),
                 "sagaId", sagaId,
                 "userId", userId
         ));
-
+        sagaStatus.put(sagaId, "SUCCESS"); // Marcar como sucesso
+        // Limpar mapas
         sagaItems.remove(sagaId);
         sagaShippingId.remove(sagaId);
         sagaOrderId.remove(sagaId);
@@ -282,7 +283,7 @@ public class CheckoutOrchestrator {
                 "sagaId", sagaId,
                 "userId", sagaUser.getOrDefault(sagaId, getLong(evt, "userId"))
         ));
-
+        sagaStatus.put(sagaId, "FAILED"); // Marcar como falha
         sagaItems.remove(sagaId);
         sagaStockResponses.remove(sagaId);
         sagaShippingId.remove(sagaId);
@@ -294,6 +295,10 @@ public class CheckoutOrchestrator {
     private void publish(Map<String, Object> body) throws Exception {
         kafka.send(SagaConstants.TOPIC, mapper.writeValueAsString(body));
         System.out.println("📤 [Saga envia] " + body);
+    }
+
+    public String getSagaStatus(String sagaId) {
+        return sagaStatus.getOrDefault(sagaId, "UNKNOWN");
     }
 
     private Long getLong(Map<String, Object> map, String key) {

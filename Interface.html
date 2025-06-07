@@ -561,9 +561,26 @@
         }
     }
 
-    function removeFromCart(bookId) {
-        cart = cart.filter(item => item.bookId !== bookId);
-        renderCart();
+    async function removeFromCart(cartItemId) {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/cart/cartitem/delete/${cartItemId}`,
+                {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                }
+            );
+            if (response.ok) {
+                // Volta a carregar o carrinho do servidor
+                await loadCart();
+                renderCart();
+            } else {
+                const err = await response.text();
+                alert('Não foi possível remover o item: ' + err);
+            }
+        } catch (err) {
+            alert('Erro ao contactar o servidor: ' + err.message);
+        }
     }
 
     async function loadCart() {
@@ -577,27 +594,28 @@
         showError('cartItems', 'Erro ao carregar carrinho: ' + error);
     }
 }
-function renderCart() {
-    cartItems.innerHTML = '';
-    if (!cart || cart.length === 0) {
-        cartItems.innerHTML = '<p>Seu carrinho está vazio.</p>';
-        return;
-    }
-    let total = 0;
-    cart.forEach(item => {
-        const book = booksCache[item.bookId];
-        if (book) {
-            const cartItem = document.createElement('div');
-            cartItem.className = 'cart-item';
-            cartItem.innerHTML = `
+    function renderCart() {
+        cartItems.innerHTML = '';
+        if (!cart || cart.length === 0) {
+            cartItems.innerHTML = '<p>O teu carrinho está vazio.</p>';
+            return;
+        }
+        let total = 0;
+        cart.forEach(item => {
+            const book = booksCache[item.bookId];
+            if (book) {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
                 <div>
                     <h4>${book.title}</h4>
                     <p>Preço unitário: €${book.price.toFixed(2)}</p>
                     <p>Quantidade: ${item.quantity}</p>
                     <p>Subtotal: €${item.subTotal.toFixed(2)}</p>
                 </div>
-                <button class="btn-danger" onclick="removeFromCart(${item.bookId})">Remover</button>
-            `;
+                <!-- nota o uso de item.id e não item.bookId -->
+                <button class="btn-danger" onclick="removeFromCart(${item.id})">Remover</button>
+                `;
             cartItems.appendChild(cartItem);
             total += item.subTotal;
         }
@@ -613,27 +631,13 @@ function renderCart() {
 }
 
     async function finalizeCheckout() {
-        // Recolher os valores dos inputs de envio
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName  = document.getElementById('lastName').value.trim();
-        const address   = document.getElementById('address').value.trim();
-        const city      = document.getElementById('city').value.trim();
-        const email     = document.getElementById('email').value.trim();
-        const postalCode= document.getElementById('postalCode').value.trim();
-
-        // Validação básica
-        if (!firstName || !lastName || !address || !city || !email || !postalCode) {
-            alert('Por favor, preencha todos os campos de envio.');
-            return;
-        }
-
         const shippingDetails = {
-            firstName: firstName,
-            lastName:  lastName,
-            address:   address,
-            city:      city,
-            email:     email,
-            postal_code: postalCode
+            firstName:  document.getElementById('firstName').value,
+            lastName:   document.getElementById('lastName').value,
+            address:    document.getElementById('address').value,
+            city:       document.getElementById('city').value,
+            email:      document.getElementById('email').value,
+            postal_code: document.getElementById('postalCode').value
         };
 
         try {
@@ -647,18 +651,57 @@ function renderCart() {
             });
 
             if (response.ok) {
-                alert('Compra finalizada com sucesso!');
-                cart = [];
-                renderCart();
-                document.getElementById('shippingDetailsForm').style.display = 'none';
-                switchTab('booksTab');
+                const data = await response.text();
+                // aceita dígitos, letras, underscore e traço
+                const match = data.match(/ID:\s*([\w-]+)/);
+                if (match) {
+                    const sagaId = match[1];
+                    checkSagaStatus(sagaId);
+                } else {
+                    alert('Erro: resposta inesperada ao iniciar checkout.');
+                }
             } else {
-                const errorText = await response.text();
-                alert('Erro ao finalizar compra: ' + errorText);
+                const error = await response.text();
+                alert('Erro ao iniciar checkout: ' + error);
             }
         } catch (err) {
-            alert('Erro ao finalizar compra: ' + err.message);
+            alert('Erro ao iniciar checkout: ' + err.message);
         }
+    }
+
+    function checkSagaStatus(sagaId) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            try {
+                const response = await fetch(`http://localhost:8080/checkout/saga/status/${sagaId}`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const status = await response.text();
+
+                if (status === 'SUCCESS') {
+                    clearInterval(interval);
+                    alert('Compra finalizada com sucesso!');
+                    loadCart();
+                    document.getElementById('shippingDetailsForm').style.display = 'none';
+                    switchTab('booksTab');
+                } else if (status === 'FAILED') {
+                    clearInterval(interval);
+                    alert('Falha na compra: Não há Stock disponível!.');
+                } else {
+                    // continua a aguardar, mas podes atualizar um spinner ou contador
+                    console.log(`Tentativa ${attempts}: status = ${status}`);
+                    if (attempts > 30) {  // por ex., timeout após 1 minuto
+                        clearInterval(interval);
+                        alert('Demorou demasiado. Tente novamente mais tarde.');
+                    }
+                }
+            } catch (err) {
+                clearInterval(interval);
+                console.error('Erro ao verificar status do saga: ', err);
+                alert('Erro ao verificar checkout. Tente novamente.');
+            }
+        }, 2000);
     }
 
     // Funções de pedidos
