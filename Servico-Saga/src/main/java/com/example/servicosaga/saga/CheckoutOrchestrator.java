@@ -10,9 +10,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 
-import static com.example.servicosaga.saga.EventType.*;
-import static com.example.servicosaga.saga.SagaConstants.TOPIC;
-
 @Service
 public class CheckoutOrchestrator {
 
@@ -40,13 +37,13 @@ public class CheckoutOrchestrator {
         String sagaId = UUID.randomUUID().toString();
         sagaShippingDetails.put(sagaId, shippingDetails);
         publish(Map.of(
-                "eventType", CartLockRequested.name(),
+                "eventType", EventType.CartLockRequested.name(),
                 "sagaId", sagaId,
                 "userId", userId
         ));
     }
 
-    @KafkaListener(topics = TOPIC, groupId = "saga-orchestrator-group")
+    @KafkaListener(topics = SagaConstants.TOPIC, groupId = "saga-orchestrator-group")
     public void listen(ConsumerRecord<String, String> rec) throws Exception {
         Map<String, Object> evt = mapper.readValue(rec.value(), Map.class);
         if (!evt.containsKey("eventType")) {
@@ -92,15 +89,16 @@ public class CheckoutOrchestrator {
                 Double unit = Double.valueOf(ci.get("unitPrice").toString());
                 Double sub = Double.valueOf(ci.get("subTotal").toString());
 
-                items.add(Map.of(
-                        "bookId", bookId,
-                        "quantity", qty,
-                        "unitPrice", unit,
-                        "subTotal", sub
-                ));
+                Map<String, Object> item = new HashMap<>();
+                item.put("bookId", bookId);
+                item.put("quantity", qty);
+                item.put("unitPrice", unit);
+                item.put("subTotal", sub);
+                item.put("reserved", false);
+                items.add(item);
 
                 Map<String, Object> reservePayload = Map.of(
-                        "eventType", StockReserveRequested.name(),
+                        "eventType", EventType.StockReserveRequested.name(),
                         "sagaId", sagaId,
                         "userId", userId,
                         "bookId", bookId,
@@ -136,14 +134,21 @@ public class CheckoutOrchestrator {
 
         sagaStockResponses.compute(sagaId, (k, v) -> (v == null) ? 1 : v + 1);
 
-        if (failed) {
+        if (!failed) {
+            List<Map<String, Object>> items = sagaItems.get(sagaId);
+            for (Map<String, Object> item : items) {
+                if (item.get("bookId").equals(bookId)) {
+                    item.put("reserved", true);
+                    break;
+                }
+            }
+            System.out.println("✅ [SagaOrchestrator] stock reservado → bookId="
+                    + bookId + ", quantity=" + quantity + " (sagaId=" + sagaId + ")");
+        } else {
             System.out.println("❌ [SagaOrchestrator] falha ao reservar stock → bookId="
                     + bookId + ", quantity=" + quantity + " (sagaId=" + sagaId + ")");
             cancelSaga(evt, "STOCK_INSUFICIENTE");
             return;
-        } else {
-            System.out.println("✅ [SagaOrchestrator] stock reservado → bookId="
-                    + bookId + ", quantity=" + quantity + " (sagaId=" + sagaId + ")");
         }
 
         int totalEsperado = sagaItems.get(sagaId).size();
@@ -228,7 +233,7 @@ public class CheckoutOrchestrator {
             }
 
             publish(Map.of(
-                    "eventType", OrderFinalizeRequested.name(),
+                    "eventType", EventType.OrderFinalizeRequested.name(),
                     "sagaId", sagaId,
                     "orderId", orderId,
                     "userId", userId
@@ -242,7 +247,7 @@ public class CheckoutOrchestrator {
         System.out.println("✅ [Saga] Pedido finalizado → orderId=" + evt.get("orderId") + ", sagaId=" + sagaId);
 
         publish(Map.of(
-                "eventType", CartClearRequested.name(),
+                "eventType", EventType.CartClearRequested.name(),
                 "sagaId", sagaId,
                 "userId", userId
         ));
@@ -260,18 +265,20 @@ public class CheckoutOrchestrator {
 
         if (sagaItems.containsKey(sagaId)) {
             for (Map<String, Object> item : sagaItems.get(sagaId)) {
-                publish(Map.of(
-                        "eventType", StockReleaseRequested.name(),
-                        "sagaId", sagaId,
-                        "userId", sagaUser.get(sagaId),
-                        "bookId", item.get("bookId"),
-                        "quantity", item.get("quantity")
-                ));
+                if ((boolean) item.getOrDefault("reserved", false)) {
+                    publish(Map.of(
+                            "eventType", EventType.StockReleaseRequested.name(),
+                            "sagaId", sagaId,
+                            "userId", sagaUser.get(sagaId),
+                            "bookId", item.get("bookId"),
+                            "quantity", item.get("quantity")
+                    ));
+                }
             }
         }
 
         publish(Map.of(
-                "eventType", CartClearRequested.name(),
+                "eventType", EventType.CartClearRequested.name(),
                 "sagaId", sagaId,
                 "userId", sagaUser.getOrDefault(sagaId, getLong(evt, "userId"))
         ));
@@ -285,7 +292,7 @@ public class CheckoutOrchestrator {
     }
 
     private void publish(Map<String, Object> body) throws Exception {
-        kafka.send(TOPIC, mapper.writeValueAsString(body));
+        kafka.send(SagaConstants.TOPIC, mapper.writeValueAsString(body));
         System.out.println("📤 [Saga envia] " + body);
     }
 
