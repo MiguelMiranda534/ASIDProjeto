@@ -205,13 +205,21 @@ INSERT INTO book (
 );
 
 UPDATE book
-SET quantity = 200
+SET quantity = 2000000000
 WHERE title = 'Harry Potter e a Pedra Filosofal';
+
+UPDATE book
+SET quantity = 2000000000
+WHERE title = 'Harry Potter e a Câmara dos Segredos';
+
+UPDATE book
+SET quantity = 2000000000
+WHERE title = 'A Vida de Cristiano Ronaldo';
 
 select * from category;
 select * from subcategory;
 select * from author;
-select * from book;
+select * from catalogodb.book;
 
 
 #===========================SERVIÇO DE CARRINHO==============================
@@ -229,7 +237,7 @@ delete from carrinhodb.cart where username = 'MarcoHoracio';
 
 UPDATE carrinhodb.cart
    SET locked = FALSE
- WHERE user_id = 4;
+ WHERE user_id = 1;
 
 UPDATE cart
    SET created_date = '2025-06-04'
@@ -273,6 +281,7 @@ show tables from querydb;
 select * from querydb.query_order_items;
 select * from querydb.query_orders;
 select * from querydb.query_shipping;
+select * from querydb.query_books;
 
 
 INSERT INTO query_books (id, title, author, price) VALUES (
