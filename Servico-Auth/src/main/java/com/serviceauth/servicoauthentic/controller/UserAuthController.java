@@ -25,7 +25,7 @@ import com.serviceauth.servicoauthentic.entity.User;
 import com.serviceauth.servicoauthentic.repository.UserRepository;
 import com.serviceauth.servicoauthentic.service.security.jwt.JwtUtils;
 
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 public class UserAuthController {
 

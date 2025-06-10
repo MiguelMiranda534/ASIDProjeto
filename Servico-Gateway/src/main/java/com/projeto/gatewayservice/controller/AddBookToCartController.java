@@ -55,7 +55,7 @@ public class AddBookToCartController {
 
         // 1) Buscar detalhes do livro no catálogo, para obter o preço
         Mono<Map<String, Object>> bookDetailsMono = webClient.get()
-                .uri("lb://servico-catalogo/catalogo/books/{id}", bookId)
+                .uri("http://servico-catalogo:8082/catalogo/books/{id}", bookId)
                 .retrieve()
                 .onStatus(status -> status.equals(HttpStatus.NOT_FOUND),
                         response -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Livro com ID " + bookId + " não encontrado no catálogo.")))
@@ -78,7 +78,7 @@ public class AddBookToCartController {
 
                     // 2) Buscar userId a partir do username no serviço de Auth
                     Mono<Map<String, Object>> userMono = webClient.get()
-                            .uri("lb://servico-auth/auth/id/{username}", username)
+                            .uri("http://servico-auth:8081/auth/id/{username}", username)
                             .retrieve()
                             .onStatus(status -> status.equals(HttpStatus.NOT_FOUND),
                                     response -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador '" + username + "' não encontrado.")))
@@ -117,7 +117,7 @@ public class AddBookToCartController {
 
                         // 4) Chamar o endpoint de adicionar ao carrinho
                         return webClient.post()
-                                .uri("lb://servico-carrinho/cart/cartitem/add")
+                                .uri("http://servico-carrinho:8083/cart/cartitem/add")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(addBookRequest)
                                 .retrieve()

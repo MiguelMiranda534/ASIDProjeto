@@ -56,7 +56,7 @@ public class AddBookToCartFilter implements GlobalFilter, Ordered {
             System.out.println("👤 Utilizador '" + username + "' a adicionar livro " + bookId + " quantidade " + quantity);
 
             Mono<Map<String, Object>> bookDetailsMono = webClient.get()
-                    .uri("lb://servico-catalogo/catalogo/books/{id}", bookId)
+                    .uri("http://servico-catalogo/catalogo/books/{id}", bookId)
                     .retrieve()
                     .onStatus(status -> status.equals(HttpStatus.NOT_FOUND),
                             response -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Livro com ID " + bookId + " não encontrado no catálogo.")))
@@ -86,7 +86,7 @@ public class AddBookToCartFilter implements GlobalFilter, Ordered {
                         System.out.println("➡️ Enviando para o carrinho: " + addBookRequest);
 
                         return webClient.post()
-                                .uri("lb://servico-carrinho/cart/cartitem/add")
+                                .uri("http://servico-carrinho/cart/cartitem/add")
                                 .bodyValue(addBookRequest)
                                 .retrieve()
                                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),

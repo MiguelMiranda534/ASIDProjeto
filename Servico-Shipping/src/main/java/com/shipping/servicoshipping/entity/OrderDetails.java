@@ -23,7 +23,7 @@ public class OrderDetails {
     private Long shippingOrderId;
 
     @Column(name = "user_id")
-    private Long userid;
+    private Long userId;   // nome do campo mantido como userId
 
     // Getters e Setters
     public Long getId() {
@@ -66,11 +66,12 @@ public class OrderDetails {
         this.shippingOrderId = shippingOrderId;
     }
 
-    public Long getUserid() {
-        return userid;
+    // Atenção aqui: getter/setter devem usar exatamente "getUserId"/"setUserId"
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserid(Long userid) {
-        this.userid = userid;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

@@ -3,102 +3,102 @@
 #CREATE DATABASE bookstore;
 
 #Utilizar a bookstore
-use bookstore;
+#use bookstore;
 
 # Ver o que está nas tabelas:
-select * from book;
-select * from author;
-select * from user;
-select * from cart;
-select * from cart_item;
-select * from shipping_order;
-select * from orders;
-select * from order_details;
-select * from category;
-select * from subcategory;
+#select * from book;
+#select * from author;
+#select * from user;
+#select * from cart;
+#select * from cart_item;
+#select * from shipping_order;
+#select * from orders;
+#select * from order_details;
+#select * from category;
+#select * from subcategory;
 
 #Inserir na bookstore
-INSERT INTO user (
-  fullname,
-  username,
-  password,
-  email
-) VALUES (
-  'João Silva',
-  'joaosilva',
-  '$2a$10$h7KOBqEtrB/eKgnPQARpSOLBmZcXeX/IAtDYvJFoFSdG1rdSbOeoO',
-  'joao@email.com'
-);
+#INSERT INTO user (
+#  fullname,
+#  username,
+#  password,
+#  email
+#) VALUES (
+#  'João Silva',
+#  'joaosilva',
+#  '$2a$10$h7KOBqEtrB/eKgnPQARpSOLBmZcXeX/IAtDYvJFoFSdG1rdSbOeoO',
+#  'joao@email.com'
+#);
 
-INSERT INTO category (name) VALUES ('Ficção');
+#INSERT INTO category (name) VALUES ('Ficção');
 
-INSERT INTO subcategory (name, category_id) VALUES ('Fantasia', 1);
+#INSERT INTO subcategory (name, category_id) VALUES ('Fantasia', 1);
 
-INSERT INTO author (author_name) VALUES ('J.K. Rowling');
+#INSERT INTO author (author_name) VALUES ('J.K. Rowling');
 
-INSERT INTO book (
-  title,
-  isbn_number,
-  image,
-  description,
-  price,
-  quantity,
-  author_id,
-  category_id,
-  subcategory_id
-) VALUES (
-  'Harry Potter e a Pedra Filosofal',
-  '9789722325961',
-  NULL,
-  'Livro de fantasia e aventura.',
-  14.99,
-  10,
-  1,
-  1,
-  1
-);
+#INSERT INTO book (
+#  title,
+#  isbn_number,
+#  image,
+#  description,
+#  price,
+#  quantity,
+#  author_id,
+#  category_id,
+#  subcategory_id
+#) VALUES (
+#  'Harry Potter e a Pedra Filosofal',
+#  '9789722325961',
+#  NULL,
+#  'Livro de fantasia e aventura.',
+#  14.99,
+#  10,
+#  1,
+#  1,
+#  1
+#);
 
-INSERT INTO book (
-  title,
-  isbn_number,
-  image,
-  description,
-  price,
-  quantity,
-  author_id,
-  category_id,
-  subcategory_id
-) VALUES (
-  'Harry Potter e a Câmara dos Segredos',
-  '9789722327331',
-  NULL,
-  'Segundo volume da saga Harry Potter.',
-  16.50,
-  8,
-  1,
-  1,
-  1
-);
+#INSERT INTO book (
+#  title,
+#  isbn_number,
+#  image,
+#  description,
+#  price,
+#  quantity,
+#  author_id,
+#  category_id,
+#  subcategory_id
+#) VALUES (
+#  'Harry Potter e a Câmara dos Segredos',
+#  '9789722327331',
+#  NULL,
+#  'Segundo volume da saga Harry Potter.',
+#  16.50,
+#  8,
+#  1,
+#  1,
+#  1
+#);
 
 #Inserir algo na shipping order:
-INSERT INTO shipping_order (first_name, last_name, address, city, email, postal_code)
-VALUES ('João', 'Silva', 'Rua dos Livros, 123', 'Lisboa', 'joao@email.com', '1000-001');
+#INSERT INTO shipping_order (first_name, last_name, address, city, email, postal_code)
+#VALUES ('João', 'Silva', 'Rua dos Livros, 123', 'Lisboa', 'joao@email.com', '1000-001');
 
 #Inserir em orders;
-INSERT INTO orders (order_date, total_price)
-VALUES (NOW(), 29.98);
+#INSERT INTO orders (order_date, total_price)
+#VALUES (NOW(), 29.98);
 
 #Inserir em order_details:
-INSERT INTO order_details (quantity, sub_total, book_id, shippingorder_id, user_id)
-VALUES
-(1, 14.99, 1, 1, 1);
+#INSERT INTO order_details (quantity, sub_total, book_id, shippingorder_id, user_id)
+#VALUES
+#(1, 14.99, 1, 1, 1);
 
 #Para testar as compositions
-SELECT * FROM order_details WHERE order_detailsid = 1;
-SELECT * FROM shipping_order WHERE shippingorder_id = 1;
-SELECT * FROM order_details;
-SHOW COLUMNS FROM shipping_order;
-show columns from user;
+#SELECT * FROM order_details WHERE order_detailsid = 1;
+#SELECT * FROM shipping_order WHERE shippingorder_id = 1;
+#SELECT * FROM order_details;
+#SHOW COLUMNS FROM shipping_order;
+#show columns from user;
 
 
 #=======================TRANSIÇÃO PARA MICROSERVIÇOS=========================
@@ -130,9 +130,13 @@ use catalogodb;
 
 INSERT INTO category (name) VALUES ('Ficção');
 
+INSERT INTO category (name) VALUES ('Biografia');
+
 INSERT INTO subcategory (name, category_id) VALUES ('Fantasia', 1);
+INSERT INTO subcategory (name, category_id) VALUES ('Biografia Futebolística', 2);
 
 INSERT INTO author (author_name) VALUES ('J.K. Rowling');
+INSERT INTO author (author_name) VALUES ('Cristiano Ronaldo');
 
 INSERT INTO book (
   title,
@@ -178,9 +182,44 @@ INSERT INTO book (
   1
 );
 
+INSERT INTO book (
+  title,
+  isbn_number,
+  image,
+  description,
+  price,
+  quantity,
+  author_id,
+  category_id,
+  subcategory_id
+) VALUES (
+  'A Vida de Cristiano Ronaldo',
+  '9789722325941',
+  NULL,
+  'História de Vida.',
+  24.99,
+  1000,
+  2,
+  2,
+  2
+);
+
 UPDATE book
-SET quantity = 200
+SET quantity = 2000000000
 WHERE title = 'Harry Potter e a Pedra Filosofal';
+
+UPDATE book
+SET quantity = 2000000000
+WHERE title = 'Harry Potter e a Câmara dos Segredos';
+
+UPDATE book
+SET quantity = 2000000000
+WHERE title = 'A Vida de Cristiano Ronaldo';
+
+select * from category;
+select * from subcategory;
+select * from author;
+select * from catalogodb.book;
 
 
 #===========================SERVIÇO DE CARRINHO==============================
@@ -189,12 +228,22 @@ CREATE DATABASE carrinhodb;
 USE carrinhodb;
 show tables from carrinhodb;
 
-select * from cart;
-select * from cart_item;
+select * from carrinhodb.cart;
+select * from carrinhodb.cart_item;
 
-UPDATE Cart
+insert into carrinhodb.cart (user_id, username) values ('1', 'MarcoHoracio');
+
+delete from carrinhodb.cart where username = 'MarcoHoracio';
+
+UPDATE carrinhodb.cart
    SET locked = FALSE
  WHERE user_id = 1;
+
+UPDATE cart
+   SET created_date = '2025-06-04'
+ WHERE user_id = 1;
+
+delete from carrinhodb.cart_item where username = "user_26179";
 
 
 #===========================SERVIÇO DE SHIPPING==============================
@@ -216,9 +265,9 @@ show tables from shippingdb;
 #VALUES (1, 14.99, 1, 7, 1);
 
 
-select * from shipping_order;
-select * from orders;
-select * from order_details;
+select * from shippingdb.shipping_order;
+select * from shippingdb.orders;
+select * from shippingdb.order_details;
 
 
 
@@ -229,9 +278,10 @@ CREATE DATABASE IF NOT EXISTS querydb;
 USE querydb;
 show tables from querydb;
 
-select * from query_order_items;
-select * from query_orders;
-select * from query_shipping;
+select * from querydb.query_order_items;
+select * from querydb.query_orders;
+select * from querydb.query_shipping;
+select * from querydb.query_books;
 
 
 INSERT INTO query_books (id, title, author, price) VALUES (

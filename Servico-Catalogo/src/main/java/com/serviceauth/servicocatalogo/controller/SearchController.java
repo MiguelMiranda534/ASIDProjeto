@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.serviceauth.servicocatalogo.entity.Book;
 import com.serviceauth.servicocatalogo.service.BookService;
 
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/catalogo")
 public class SearchController {

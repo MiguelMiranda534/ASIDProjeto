@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/order")
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 public class ShippingOrderController {
     
     @Autowired
