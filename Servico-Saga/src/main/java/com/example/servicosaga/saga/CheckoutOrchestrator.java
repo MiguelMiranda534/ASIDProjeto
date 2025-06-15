@@ -74,7 +74,7 @@ public class CheckoutOrchestrator {
 
         List<?> cart = webClientBuilder.build()
                 .get()
-                .uri("http://servico-carrinho:8083/cart/cartitem/user/{user}", userId)
+                .uri("http://servico-carrinho-lb:8083/cart/cartitem/user/{user}", userId)
                 .retrieve()
                 .bodyToFlux(Object.class)
                 .collectList()
@@ -179,7 +179,7 @@ public class CheckoutOrchestrator {
 
                 Map<?, ?> soResponse = webClientBuilder.build()
                         .post()
-                        .uri("http://servico-shipping:8084/order/shipping")
+                        .uri("http://servico-shipping-lb:8084/order/shipping")
                         .bodyValue(payload)
                         .retrieve()
                         .bodyToMono(Map.class)
@@ -225,7 +225,7 @@ public class CheckoutOrchestrator {
                 );
                 webClientBuilder.build()
                         .post()
-                        .uri("http://servico-shipping:8084/order/details")
+                        .uri("http://servico-shipping-lb:8084/order/details")
                         .bodyValue(detailPayload)
                         .retrieve()
                         .bodyToMono(Map.class)

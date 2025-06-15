@@ -13,27 +13,27 @@ spring:
           lower-case-service-id: true
       routes:
         - id: servico-auth
-          uri: http://servico-auth:8081
+          uri: http://servico-auth-lb:8081
           predicates:
             - Path=/auth/**
         - id: servico-catalogo
-          uri: http://servico-catalogo:8082
+          uri: http://servico-catalogo-lb:8082
           predicates:
             - Path=/catalogo/**
         - id: servico-carrinho
-          uri: http://servico-carrinho:8083
+          uri: http://servico-carrinho-lb:8083
           predicates:
             - Path=/cart/**
         - id: servico-shipping
-          uri: http://servico-shipping:8084
+          uri: http://servico-shipping-lb:8084
           predicates:
             - Path=/order/**
         - id: servico-query
-          uri: http://servico-query:8085
+          uri: http://servico-query-lb:8085
           predicates:
             - Path=/query/**
         - id: servico-saga
-          uri: http://servico-saga:8086
+          uri: http://servico-saga-lb:8086
           predicates:
             - Path=/checkout/**
 

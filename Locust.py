@@ -7,7 +7,7 @@ from json.decoder import JSONDecodeError
 import uuid
 
 class BookstoreUser(HttpUser):
-    host = "http://localhost:8080"
+    host = "http://79.72.49.184:8080"
     wait_time = between(1, 5)
     token = None
     user_id = None

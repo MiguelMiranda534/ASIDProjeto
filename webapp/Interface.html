@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livraria Online</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .page {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, button {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            width: 100%;
+            max-width: 400px;
+            background-color: #f9f9f9;
+        }
+
+        input:focus {
+            border-color: #4e73df;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.2);
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            font-weight: 600;
+            width: auto;
+            min-width: 150px;
+            padding: 12px 20px;
+        }
+
+        button:hover {
+            background-color: #2e59d9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .book {
+            border: 1px solid #e0e6ed;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: white;
+            transition: transform 0.3s ease;
+        }
+
+        .book:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border-color: #d1d9e6;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fc;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .order {
+            border: 1px solid #e0e6ed;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .error {
+            color: #e74a3b;
+            margin-top: 15px;
+            padding: 10px;
+            background: #fce8e6;
+            border-radius: 6px;
+            border-left: 4px solid #e74a3b;
+        }
+
+        .success {
+            color: #1cc88a;
+            margin-top: 15px;
+            padding: 10px;
+            background: #eafaf1;
+            border-radius: 6px;
+            border-left: 4px solid #1cc88a;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e6ed;
+            margin-bottom: 30px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f0f2f5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: #4e73df;
+            color: white;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .flex-container {
+            display: flex;
+            gap: 30px;
+        }
+
+        .flex-column {
+            flex: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        h1, h2, h3 {
+            color: #2e384d;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4e73df;
+        }
+
+        .btn-danger {
+            background-color: #e74a3b;
+        }
+
+        .btn-danger:hover {
+            background-color: #c03527;
+        }
+    </style>
+</head>
+<body>
+<!-- Página de Login -->
+<div id="loginPage" class="page active">
+    <h1>Livraria Online</h1>
+
+    <div class="card">
+        <h2>Login</h2>
+        <div class="form-group">
+            <label for="username">Utilizador:</label>
+            <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" id="password" required>
+        </div>
+        <button onclick="login()">Entrar</button>
+        <div id="loginError" class="error"></div>
+    </div>
+
+    <div class="card">
+        <h2>Registro</h2>
+        <div class="form-group">
+            <label for="regUsername">Utilizador:</label>
+            <input type="text" id="regUsername" required>
+        </div>
+        <div class="form-group">
+            <label for="regPassword">Senha:</label>
+            <input type="password" id="regPassword" required>
+        </div>
+        <div class="form-group">
+            <label for="regEmail">Email:</label>
+            <input type="email" id="regEmail" required>
+        </div>
+        <div class="form-group">
+            <label for="regFullname">Nome Completo:</label>
+            <input type="text" id="regFullname" required>
+        </div>
+        <button onclick="register()">Registrar</button>
+        <div id="registerError" class="error"></div>
+        <div id="registerSuccess" class="success"></div>
+    </div>
+</div>
+
+<!-- Página Principal -->
+<div id="mainPage" class="page">
+    <div class="header">
+        <h1>Livraria Online</h1>
+        <div class="user-info">
+            <span id="loggedInUser"></span>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('booksTab')">Livros</div>
+        <div class="tab" onclick="switchTab('cartTab')">Carrinho</div>
+        <div class="tab" onclick="switchTab('ordersTab')">Meus Pedidos</div>
+    </div>
+
+    <!-- Livros -->
+    <div id="booksTab" class="section active">
+        <h2>Livros Disponíveis</h2>
+        <div id="booksList"></div>
+    </div>
+
+    <!-- Carrinho -->
+    <div id="cartTab" class="section">
+        <div id="shippingDetailsForm" style="display: none;">
+            <h3>Informações de Envio</h3>
+            <div class="form-group">
+                <label for="firstName">Nome:</label>
+                <input type="text" id="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Sobrenome:</label>
+                <input type="text" id="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="address">Endereço:</label>
+                <input type="text" id="address" required>
+            </div>
+            <div class="form-group">
+                <label for="city">Cidade:</label>
+                <input type="text" id="city" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="postalCode">Código Postal:</label>
+                <input type="text" id="postalCode" required>
+            </div>
+            <button onclick="finalizeCheckout()">Confirmar Envio e Finalizar Compra</button>
+        </div>
+        <h2>Seu Carrinho</h2>
+        <div id="cartItems"></div>
+        <button onclick="showShippingDetailsForm()" style="margin-top: 20px;">Finalizar Compra</button>
+    </div>
+
+    <!-- Pedidos -->
+    <div id="ordersTab" class="section">
+        <h2>Seus Pedidos</h2>
+        <div class="card">
+            <h3>Consultar Pedidos</h3>
+            <div class="form-group">
+                <label for="startDate">Data Início:</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="form-group">
+                <label for="endDate">Data Fim:</label>
+                <input type="date" id="endDate">
+            </div>
+            <button onclick="getOrders()">Buscar Pedidos</button>
+        </div>
+
+        <div id="ordersList"></div>
+    </div>
+</div>
+
+<script>
+    // Variáveis globais
+    let currentToken = null;
+    let currentUserId = null;
+    let currentUsername = null;
+    let cart = [];
+    let booksCache = {};
+
+    // Elementos DOM
+    const loginPage = document.getElementById('loginPage');
+    const mainPage = document.getElementById('mainPage');
+    const booksList = document.getElementById('booksList');
+    const cartItems = document.getElementById('cartItems');
+    const ordersList = document.getElementById('ordersList');
+    const loggedInUser = document.getElementById('loggedInUser');
+
+    // Funções de navegação
+    function showPage(page) {
+        loginPage.classList.remove('active');
+        mainPage.classList.remove('active');
+        page.classList.add('active');
+    }
+
+    function switchTab(tabId) {
+        // Remover classe active de todas as tabs e sections
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Adicionar classe active à tab e section selecionadas
+        document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+
+        // Atualizar dados se necessário
+        if (tabId === 'cartTab') {
+            renderCart();
+        } else if (tabId === 'ordersTab') {
+            // Não carregar automaticamente para evitar muitas requisições
+        }
+    }
+
+    // Funções de autenticação
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Limpar erros anteriores
+        document.getElementById('loginError').textContent = '';
+
+        try {
+            const response = await fetch('http://79.72.49.227:8080/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentToken = data.token;
+                currentUsername = username;
+
+                // Obter ID do Utilizador
+                try {
+                    const userResponse = await fetch(`http://79.72.49.227:8080/auth/id/${username}`, {
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`
+                        }
+                    });
+
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        currentUserId = userData.id;
+                        loggedInUser.textContent = `Utilizador: ${username}`;
+
+                        showPage(mainPage);
+                        loadBooks();
+                        loadCart();
+                    } else {
+                        const error = await userResponse.text();
+                        showError('loginError', 'Erro ao obter ID do Utilizador: ' + error);
+                    }
+                } catch (error) {
+                    showError('loginError', 'Erro ao obter ID do Utilizador: ' + error.message);
+                }
+            } else {
+                const error = await response.text();
+                showError('loginError', 'Falha no login: ' + error);
+            }
+        } catch (error) {
+            showError('loginError', 'Erro na conexão: ' + error.message);
+        }
+    }
+
+    async function register() {
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        const email = document.getElementById('regEmail').value;
+        const fullname = document.getElementById('regFullname').value;
+
+        // Limpar mensagens anteriores
+        document.getElementById('registerError').textContent = '';
+        document.getElementById('registerSuccess').textContent = '';
+
+        try {
+            const response = await fetch('http://79.72.49.227:8080/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    email,
+                    fullname
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('registerSuccess').textContent = 'Registrado com sucesso! Faça login.';
+                // Limpar formulário
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regEmail').value = '';
+                document.getElementById('regFullname').value = '';
+            } else {
+                const error = await response.text();
+                showError('registerError', 'Erro no registro: ' + error);
+            }
+        } catch (error) {
+            showError('registerError', 'Erro na conexão: ' + error.message);
+        }
+    }
+
+    function logout() {
+        currentToken = null;
+        currentUserId = null;
+        currentUsername = null;
+        cart = [];
+        showPage(loginPage);
+        // Limpar campos de login
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+
+    // Funções de livros
+    async function loadBooks() {
+        try {
+            const response = await fetch('http://79.72.49.227:8080/catalogo/books', {
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`
+                }
+            });
+
+            if (response.ok) {
+                const books = await response.json();
+                booksCache = {};
+                books.forEach(book => {
+                    booksCache[book.id] = book;
+                });
+                renderBooks(books);
+            } else {
+                const error = await response.text();
+                showError('booksList', 'Erro ao carregar livros: ' + error);
+            }
+        } catch (error) {
+            showError('booksList', 'Erro na conexão: ' + error.message);
+        }
+    }
+
+    function renderBooks(books) {
+        booksList.innerHTML = '';
+
+        if (books.length === 0) {
+            booksList.innerHTML = '<p>Nenhum livro disponível no momento.</p>';
+            return;
+        }
+
+        books.forEach(book => {
+            const bookDiv = document.createElement('div');
+            bookDiv.className = 'book';
+            bookDiv.innerHTML = `
+                    <h3>${book.title}</h3>
+                    <p><strong>Autor:</strong> ${book.author?.authorName || 'Autor desconhecido'}</p>
+                    <p><strong>Preço:</strong> €${book.price.toFixed(2)}</p>
+                    <div class="form-group">
+                        <label for="qty-${book.id}">Quantidade:</label>
+                        <input type="number" id="qty-${book.id}" value="1" min="1" style="width: 100px;">
+                    </div>
+                    <button onclick="addToCart(${book.id})">Adicionar ao Carrinho</button>
+                `;
+            booksList.appendChild(bookDiv);
+        });
+    }
+
+    // Funções de carrinho
+    async function addToCart(bookId) {
+        const quantity = parseInt(document.getElementById(`qty-${bookId}`).value);
+        if (isNaN(quantity) || quantity <= 0) {
+            alert('Por favor, insira uma quantidade válida.');
+            return;
+        }
+        const book = booksCache[bookId];
+        const response = await fetch('http://79.72.49.227:8080/cart/cartitem/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUserId,
+                username: currentUsername,  // Add this line
+                bookId: parseInt(bookId),
+                quantity: quantity,
+                unitPrice: book.price,
+                subTotal: book.price * quantity
+            })
+        });
+        if (response.ok) {
+            await loadCart(); // Fetch updated cart from server
+            renderCart();
+            switchTab('cartTab');
+        } else {
+            const error = await response.text();
+            alert('Erro ao adicionar ao carrinho: ' + error);
+        }
+    }
+
+    async function removeFromCart(cartItemId) {
+        try {
+            const response = await fetch(
+                `http://79.72.49.227:8080/cart/cartitem/delete/${cartItemId}`,
+                {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                }
+            );
+            if (response.ok) {
+                // Volta a carregar o carrinho do servidor
+                await loadCart();
+                renderCart();
+            } else {
+                const err = await response.text();
+                alert('Não foi possível remover o item: ' + err);
+            }
+        } catch (err) {
+            alert('Erro ao contactar o servidor: ' + err.message);
+        }
+    }
+
+    async function loadCart() {
+    const response = await fetch(`http://79.72.49.227:8080/cart/cartitem/user/${currentUserId}`, {
+        headers: { 'Authorization': `Bearer ${currentToken}` }
+    });
+    if (response.ok) {
+        cart = await response.json();
+    } else {
+        const error = await response.text();
+        showError('cartItems', 'Erro ao carregar carrinho: ' + error);
+    }
+}
+    function renderCart() {
+        cartItems.innerHTML = '';
+        if (!cart || cart.length === 0) {
+            cartItems.innerHTML = '<p>O teu carrinho está vazio.</p>';
+            return;
+        }
+        let total = 0;
+        cart.forEach(item => {
+            const book = booksCache[item.bookId];
+            if (book) {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                <div>
+                    <h4>${book.title}</h4>
+                    <p>Preço unitário: €${book.price.toFixed(2)}</p>
+                    <p>Quantidade: ${item.quantity}</p>
+                    <p>Subtotal: €${item.subTotal.toFixed(2)}</p>
+                </div>
+                <button class="btn-danger" onclick="removeFromCart(${item.id})">Remover</button>
+                `;
+            cartItems.appendChild(cartItem);
+            total += item.subTotal;
+        }
+    });
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'cart-item';
+    totalDiv.style.fontWeight = 'bold';
+    totalDiv.innerHTML = `
+        <div>Total do Carrinho:</div>
+        <div>€${total.toFixed(2)}</div>
+    `;
+    cartItems.appendChild(totalDiv);
+}
+
+    async function finalizeCheckout() {
+        const shippingDetails = {
+            firstName:  document.getElementById('firstName').value,
+            lastName:   document.getElementById('lastName').value,
+            address:    document.getElementById('address').value,
+            city:       document.getElementById('city').value,
+            email:      document.getElementById('email').value,
+            postal_code: document.getElementById('postalCode').value
+        };
+
+        try {
+            const response = await fetch(`http://79.72.49.227:8080/checkout/${currentUserId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(shippingDetails)
+            });
+
+            if (response.ok) {
+                const data = await response.text();
+                // aceita dígitos, letras, underscore e traço
+                const match = data.match(/ID:\s*([\w-]+)/);
+                if (match) {
+                    const sagaId = match[1];
+                    checkSagaStatus(sagaId);
+                } else {
+                    alert('Erro: resposta inesperada ao iniciar checkout.');
+                }
+            } else {
+                const error = await response.text();
+                alert('Erro ao iniciar checkout: ' + error);
+            }
+        } catch (err) {
+            alert('Erro ao iniciar checkout: ' + err.message);
+        }
+    }
+
+    function checkSagaStatus(sagaId) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            try {
+                const response = await fetch(`http://79.72.49.227:8080/checkout/saga/status/${sagaId}`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const status = await response.text();
+
+                if (status === 'SUCCESS') {
+                    clearInterval(interval);
+                    alert('Compra finalizada com sucesso!');
+                    loadCart();
+                    document.getElementById('shippingDetailsForm').style.display = 'none';
+                    switchTab('booksTab');
+                } else if (status === 'FAILED') {
+                    clearInterval(interval);
+                    alert('Falha na compra: Não há Stock disponível!.');
+                } else {
+                    // continua a aguardar, mas podes atualizar um spinner ou contador
+                    console.log(`Tentativa ${attempts}: status = ${status}`);
+                    if (attempts > 30) {  // por ex., timeout após 1 minuto
+                        clearInterval(interval);
+                        alert('Demorou demasiado. Tente novamente mais tarde.');
+                    }
+                }
+            } catch (err) {
+                clearInterval(interval);
+                console.error('Erro ao verificar status do saga: ', err);
+                alert('Erro ao verificar checkout. Tente novamente.');
+            }
+        }, 2000);
+    }
+
+    // Funções de pedidos
+    async function getOrders() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        if (!startDate || !endDate) {
+            alert('Por favor, selecione as datas de início e fim.');
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://79.72.49.227:8080/query/orders/${currentUserId}?startDate=${startDate}&endDate=${endDate}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const orders = await response.json();
+                renderOrders(orders);
+            } else {
+                const error = await response.text();
+                showError('ordersList', 'Erro ao buscar pedidos: ' + error);
+            }
+        } catch (error) {
+            showError('ordersList', 'Erro na conexão: ' + error.message);
+        }
+    }
+
+    function showShippingDetailsForm() {
+        if (!cart || cart.length === 0) {
+            alert('O seu carrinho está vazio!');
+            return;
+        }
+        document.getElementById('shippingDetailsForm').style.display = 'block';
+        // Opcional: scroll até ao formulário, se quiseres
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function renderOrders(orders) {
+        ordersList.innerHTML = '';
+
+        if (orders.length === 0) {
+            ordersList.innerHTML = '<p>Nenhum pedido encontrado no período selecionado.</p>';
+            return;
+        }
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement('div');
+            orderDiv.className = 'order';
+            orderDiv.innerHTML = `
+                    <h3>Pedido #${order.orderId}</h3>
+                    <p><strong>Data:</strong> ${new Date(order.orderDate).toLocaleDateString()}</p>
+                    <p><strong>Total:</strong> €${order.totalPrice.toFixed(2)}</p>
+                    <p><strong>Status:</strong> ${order.status}</p>
+                    <button onclick="viewOrderDetails(${order.orderId})">Ver Detalhes</button>
+                `;
+            ordersList.appendChild(orderDiv);
+        });
+    }
+
+    async function viewOrderDetails(orderId) {
+        try {
+            const response = await fetch(
+                `http://79.72.49.227:8080/gateway/orderDetails/${orderId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const orderDetails = await response.json();
+                alert(JSON.stringify(orderDetails, null, 2));
+            } else {
+                const error = await response.text();
+                alert('Erro ao buscar detalhes do pedido: ' + error);
+            }
+        } catch (error) {
+            alert('Erro na conexão: ' + error.message);
+        }
+    }
+
+    // Utilitários
+    function showError(elementId, message) {
+        document.getElementById(elementId).textContent = message;
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar data padrão para consulta de pedidos
+        const today = new Date();
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(today.getMonth() - 1);
+
+        document.getElementById('startDate').valueAsDate = oneMonthAgo;
+        document.getElementById('endDate').valueAsDate = today;
+    });
+</script>
+</body>
+</html>

@@ -16,26 +16,18 @@ public class CorsGlobalConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // 1) Permitir explicitamente a origem do teu frontend:
-        corsConfig.setAllowedOrigins(List.of("http://localhost:8000"));
+        // Specific frontend origins (replace with your actual frontend IPs/domains)
+        corsConfig.setAllowedOrigins(List.of(
+                "http://79.72.49.227"       // Current frontend IP
+        ));
 
-        // 2) Permitir todos os métodos HTTP usados no frontend
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // 3) Permitir todos os cabeçalhos (especialmente Content-Type e Authorization)
         corsConfig.setAllowedHeaders(List.of("*"));
-
-        // 4) Expor cabeçalhos se for necessário (por exemplo, Authorization, etc.)
-        corsConfig.setExposedHeaders(List.of("Authorization", "Content-Type"));
-
-        // 5) Se estiveres a usar cookies ou queres enviar credenciais (não é obrigatório para JWT)
+        corsConfig.setExposedHeaders(List.of("Authorization"));
         corsConfig.setAllowCredentials(true);
-
-        // 6) Quanto tempo o navegador pode fazer cache do preflight (em segundos)
         corsConfig.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Regista para todas as rotas do Gateway
         source.registerCorsConfiguration("/**", corsConfig);
 
         return new CorsWebFilter(source);

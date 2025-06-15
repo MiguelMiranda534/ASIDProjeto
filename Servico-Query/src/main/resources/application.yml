@@ -6,7 +6,7 @@ spring:
     name: servico-query
 
   datasource:
-    url: jdbc:mysql://localhost:3306/querydb
+    url: jdbc:mysql://mysql:3306/querydb
     username: root
     password: janith
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,7 +18,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
     consumer:
       group-id: servico-query-group
       auto-offset-reset: earliest

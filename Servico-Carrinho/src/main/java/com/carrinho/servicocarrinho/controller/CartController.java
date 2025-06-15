@@ -36,6 +36,14 @@ public class CartController {
     // NOVO endpoint: busca carrinho pelo userId
     @GetMapping("/cart/user/{userId}")
     public ResponseEntity<Cart> getCartByUserId(@PathVariable Long userId) {
+        System.out.println("Recebido userId: " + userId);
+        Long idLong = null;
+        try {
+            idLong = Long.valueOf(userId);
+        } catch (NumberFormatException e) {
+            System.err.println("Parâmetro inválido para userId: " + userId);
+            return ResponseEntity.badRequest().build();
+        }
         Cart cart = cartService.getCartByUserId(userId);
         if (cart != null) {
             return new ResponseEntity<>(cart, HttpStatus.OK);
