@@ -1,0 +1,252 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  mysql-root-password: amFuaXRo # Base64-encoded "janith"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb
+data:
+  init.sql: |-
+    DROP DATABASE IF EXISTS authdb;
+    CREATE DATABASE authdb;
+    USE authdb;
+    CREATE TABLE IF NOT EXISTS user (
+                                        userid BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                        fullname VARCHAR(255),
+        username VARCHAR(50) UNIQUE,
+        password VARCHAR(255),
+        email VARCHAR(100) UNIQUE
+        );
+    INSERT IGNORE INTO user (fullname, username, password, email)
+    VALUES ('João Pereira Silva', 'joaosilva', '$2a$10$h7KOBqEtrB/eKgnPQARpSOLBmZcXeX/IAtDYvJFoFSdG1rdSbOeoO', 'joao@email.com');
+    DROP DATABASE IF EXISTS catalogodb;
+    CREATE DATABASE catalogodb;
+    USE catalogodb;
+    CREATE TABLE IF NOT EXISTS category (
+                                            categoryid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                            name VARCHAR(255) UNIQUE NOT NULL
+        );
+    CREATE TABLE IF NOT EXISTS subcategory (
+                                               subcategoryid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                               name VARCHAR(255) UNIQUE NOT NULL,
+        category_id BIGINT NOT NULL,
+        FOREIGN KEY (category_id) REFERENCES category(categoryid)
+        );
+    CREATE TABLE IF NOT EXISTS author (
+                                          authorid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                          author_name VARCHAR(255) UNIQUE NOT NULL
+        );
+    CREATE TABLE IF NOT EXISTS book (
+                                        bookid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                        title VARCHAR(255),
+        isbn_number VARCHAR(50) UNIQUE,
+        image BLOB,
+        description TEXT,
+        price DECIMAL(10,2),
+        quantity INT,
+        author_id BIGINT NOT NULL,
+        category_id BIGINT NOT NULL,
+        subcategory_id BIGINT NOT NULL,
+        FOREIGN KEY (author_id) REFERENCES author(authorid),
+        FOREIGN KEY (category_id) REFERENCES category(categoryid),
+        FOREIGN KEY (subcategory_id) REFERENCES subcategory(subcategoryid)
+        );
+    INSERT IGNORE INTO category (name) VALUES ('Ficção');
+    INSERT IGNORE INTO category (name) VALUES ('Biografia');
+    INSERT IGNORE INTO subcategory (name, category_id) VALUES ('Fantasia', 1);
+    INSERT IGNORE INTO subcategory (name, category_id) VALUES ('Biografia de Futebolística', 2);
+    INSERT IGNORE INTO author (author_name) VALUES ('J.K. Rowling');
+    INSERT IGNORE INTO author (author_name) VALUES ('Cristiano Ronaldo');
+    INSERT IGNORE INTO book (bookid, title, isbn_number, image, description, price, quantity, author_id, category_id, subcategory_id)
+    VALUES (1, 'Harry Potter e a Pedra Filosofal', '9789722325961', NULL, 'Livro de fantasia e aventura.', 14.99, 1, 1, 1, 1);
+    INSERT IGNORE INTO book (bookid, title, isbn_number, image, description, price, quantity, author_id, category_id, subcategory_id)
+    VALUES (2, 'Harry Potter e a Câmara dos Segredos', '9789722327331', NULL, 'Segundo volume da saga Harry Potter.', 16.50, 1, 1, 1, 1);
+    INSERT IGNORE INTO book (bookid, title, isbn_number, image, description, price, quantity, author_id, category_id, subcategory_id)
+    VALUES (3, 'A Vida de Cristiano Ronaldo', '9789722325941', NULL, 'História de Vida.', 24.99, 1, 2, 2, 2);
+    DROP DATABASE IF EXISTS carrinhodb;
+    CREATE DATABASE carrinhodb;
+    USE carrinhodb;
+    CREATE TABLE IF NOT EXISTS cart (
+                                        cartid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                        user_id BIGINT,
+                                        username VARCHAR(255),
+        locked BOOLEAN DEFAULT FALSE,
+        created_date DATE
+        );
+    CREATE TABLE IF NOT EXISTS cart_item (
+                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                             user_id BIGINT,
+                                             book_id BIGINT,
+                                             quantity INT,
+                                             username VARCHAR(255),
+        unit_price DECIMAL(10,2),
+        sub_total DECIMAL(10,2)
+        );
+    INSERT IGNORE INTO cart (user_id, username) VALUES (1, 'MarcoHoracio');
+    DELETE FROM cart WHERE username = 'MarcoHoracio';
+    UPDATE cart SET locked = FALSE WHERE user_id = 1;
+    UPDATE cart SET created_date = '2025-06-04 00:00:00' WHERE user_id = 1;
+    DELETE FROM cart_item WHERE user_id = 26179;
+    DROP DATABASE IF EXISTS shippingdb;
+    CREATE DATABASE shippingdb;
+    USE shippingdb;
+    CREATE TABLE IF NOT EXISTS shipping_order (
+                                                  shippingorder_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                                  first_name VARCHAR(255),
+        last_name VARCHAR(255),
+        address VARCHAR(255),
+        city VARCHAR(255),
+        email VARCHAR(255),
+        postal_code VARCHAR(255),
+        user_Id BIGINT
+        );
+    CREATE TABLE IF NOT EXISTS orders (
+                                          orderid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                          order_date DATE,
+                                          total_price DECIMAL(10,2),
+        shippingorder_id BIGINT,
+        user_id BIGINT,
+        status VARCHAR(20) DEFAULT 'PENDING',
+        FOREIGN KEY (shippingorder_id) REFERENCES shipping_order(shippingorder_id)
+        );
+    CREATE TABLE IF NOT EXISTS order_details (
+                                                 order_detailsid BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                                 quantity INT,
+                                                 sub_total DECIMAL(10,2),
+        book_id BIGINT,
+        shippingorder_id BIGINT,
+        user_id BIGINT,
+        FOREIGN KEY (shippingorder_id) REFERENCES shipping_order(shippingorder_id)
+        );
+    DROP DATABASE IF EXISTS querydb;
+    CREATE DATABASE querydb;
+    USE querydb;
+    CREATE TABLE IF NOT EXISTS query_books (
+                                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                               title VARCHAR(255),
+        author VARCHAR(255),
+        price DECIMAL(10,2)
+        );
+    CREATE TABLE IF NOT EXISTS query_orders (
+                                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                                user_id BIGINT,
+                                                order_date DATE,
+                                                total_price DECIMAL(10,2),
+        status VARCHAR(20) DEFAULT 'PENDING'
+        );
+    CREATE TABLE IF NOT EXISTS query_order_items (
+                                                     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                                     order_id BIGINT,
+                                                     book_id BIGINT,
+                                                     quantity INT,
+                                                     sub_total DECIMAL(10,2),
+        FOREIGN KEY (order_id) REFERENCES query_orders(id)
+        );
+    CREATE TABLE IF NOT EXISTS query_shipping (
+                                                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                                  order_id BIGINT,
+                                                  first_name VARCHAR(255),
+        last_name VARCHAR(255),
+        address VARCHAR(255),
+        city VARCHAR(255),
+        email VARCHAR(255),
+        postal_code VARCHAR(255),
+        FOREIGN KEY (order_id) REFERENCES query_orders(id)
+        );
+    INSERT IGNORE INTO query_books (id, title, author, price) VALUES (
+        1, 'Harry Potter e a Pedra Filosofal', 'J.K. Rowling', 14.99
+    );
+    INSERT IGNORE INTO query_books (id, title, author, price) VALUES (
+        2, 'Harry Potter e a Câmara dos Segredos', 'J.K. Rowling', 16.50
+    );
+    INSERT IGNORE INTO query_books (id, title, author, price) VALUES (
+        3, 'A Vida de Cristiano Ronaldo', 'Cristiano Ronaldo', 24.99
+    );
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-root-password
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc-1
+        - name: initdb
+          configMap:
+            name: mysql-initdb
+            items:
+              - key: init.sql
+                path: init.sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP

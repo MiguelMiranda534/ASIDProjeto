@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livraria-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livraria-web
+  template:
+    metadata:
+      labels:
+        app: livraria-web
+    spec:
+      containers:
+        - name: livraria-web
+          image: MAD.ocir.io/axvi0ijuogkl/livraria-web:v7
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: ocirsecret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livraria-web-lb
+  labels:
+    app: livraria-web
+  annotations:
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: livraria-web
